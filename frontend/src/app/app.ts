@@ -1,12 +1,31 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+
+import 'primeicons/primeicons.css';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    ButtonModule
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrls: ['./app.scss']
 })
 export class App {
-  protected readonly title = signal('frontend');
+  constructor(private router: Router) {}
+
+  public buttons = [
+    { label: 'Strona Główna', link: '/', icon: 'pi pi-home' },
+    { label: 'Kontakt', link: '/contact', icon: 'pi pi-envelope' },
+    { label: 'O nas', link: '/about', icon: 'pi pi-info-circle' },
+  ];
+  
+  openLink(url: string) {
+    this.router.navigateByUrl(url);
+  }
 }
