@@ -10,19 +10,19 @@ export class Stolik {
     type: 'integer',
     nullable: false,
   })
-  imie: number;
+  numer_stolika: number;
 
   @Column({
     type: 'integer',
     nullable: false,
   })
-  nazwisko: number;
+  ilosc_miejsc: number;
 
   @Column({
     type: 'varchar',
     nullable: false,
   })
-  email: string;
+  lokalizacja: string;
 
   @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.stolik)
   rezerwacje: Rezerwacja[];
