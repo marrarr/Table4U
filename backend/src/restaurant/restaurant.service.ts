@@ -11,9 +11,12 @@ export class RestaurantService {
     private readonly restaurantRepository: Repository<Restaurant>,
   ) {}
 
-  findAll(): Promise<Restaurant[]> {
-    return this.restaurantRepository.find();
+  async findAll(): Promise<Restaurant[]> {
+    const restaurants = await this.restaurantRepository.find();
+    console.log(restaurants);
+    return restaurants;
   }
+  
   
   async findOne(id: number): Promise<Restaurant> {
     const restaurant = await this.restaurantRepository.findOneBy({ id });

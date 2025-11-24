@@ -8,6 +8,7 @@ export class RestaurantController {
 
   @Get()
   findAll(): Promise<Restaurant[]> {
+    console.log('test')
     return this.restaurantService.findAll();
   }
 

@@ -1,5 +1,27 @@
-body{
-    margin: 0;
-    padding: 0;
-    height: 100%;
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
+
+.p-dialog {
+  background-color: #fff !important;
+  border-radius: 8px !important;
+}
+.p-dialog-content {
+  background-color: #fff !important;
+  padding: 1.5rem !important;
+}
+
+.my-dialog .p-dialog-footer {
+  background-color: #f7f7f7 !important;
+  text-align: right;
+  padding: 1rem !important;
+}
+.my-dialog .p-dialog-header {
+    background-color: #007ad9 !important;
+    color: #fff !important;
+    font-size: 1.2rem;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+  }
