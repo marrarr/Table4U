@@ -32,9 +32,9 @@ export class Restauracja {
 
   @Column({
     nullable: true,
-    type: 'bytea',
+    type: 'mediumblob',
   })
-  zdjecie: Blob;
+  zdjecie: Buffer;
 
   @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.restauracja)
   rezerwacje: Rezerwacja[];
