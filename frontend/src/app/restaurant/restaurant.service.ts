@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Restaurant } from '../models/restaurant.model';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,10 @@ export class RestaurantService {
 
   constructor(private http: HttpClient) {}
 
-  getAllRestaurants(): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(this.apiUrl);
+  getAllRestaurants(): Promise<Restaurant[]> {
+    return firstValueFrom(this.http.get<Restaurant[]>(this.apiUrl));
+  }
+  createRestaurant(data: Partial<Restaurant>): Promise<Restaurant> {
+    return firstValueFrom(this.http.post<Restaurant>(this.apiUrl, data));
   }
 }

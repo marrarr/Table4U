@@ -1,6 +1,6 @@
 // src/data-source.ts
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import * as path from 'path';
 import { config } from 'dotenv';
 

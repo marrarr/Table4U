@@ -1,5 +1,77 @@
 <div class="home">
-    <h1>{{ title() }}</h1>
-    <p>To jest strona startowa Twojej aplikacji Angular.</p>
+  <h1>{{ title() }}</h1>
+  <p>To jest strona startowa Twojej aplikacji Angular.</p>
+
+  <h2>Lista restauracji:</h2>
+  <div>
+  <button
+    pButton
+    icon="pi pi-search"
+    label="Szukaj restauracji"
+    (click)="getRestaurant()">
+  </button>
+  <button
+  pButton
+  icon="pi pi-search"
+  label="Dodaj restauracje"
+  (click)="addingDialog = true">
+</button>
   </div>
-  
+  <ul>
+    <li *ngFor="let restaurant of restaurant">
+      <strong>{{ restaurant.name }}</strong> - {{ restaurant.address }} (Rating: {{ restaurant.rating }})
+    </li>
+  </ul>
+</div>
+
+
+<p-dialog
+  [(visible)]="addingDialog"
+  [header]="'Dodawanie restauracji'"
+  [modal]="true"
+  [styleClass]="'my-dialog'">
+  <ng-template pTemplate="content">
+    <div class="field">
+
+      <div class="field">
+        <h4>Dane restauracji</h4>
+        <div class="field">
+          <label for="name">Nazwa</label>
+          <input
+            type="text"
+            pInputText
+            id="name"
+            [(ngModel)]="newRestaurant.name"
+            name="name"
+            
+          />
+        </div >
+        <div class="field">
+          <label>address</label>
+          <input
+            type="text"
+            pInputText
+            [(ngModel)]="newRestaurant.address"
+            name="address"
+    
+          />
+        </div>
+        <div class="field">
+          <label>rating</label>
+          <input
+            type="number"
+            pInputNumber
+            [(ngModel)]="newRestaurant.rating"
+            name="rating"
+        
+          />
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Anuluj" (click)="addingDialog = false"></button>
+    <button pButton label="Zapisz" (click)="saveRestaurant()"></button>
+  </ng-template>
+</p-dialog>
