@@ -5,10 +5,10 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Klient } from './klient.entity';
-import { Pracownik } from './pracownik.entity';
-import { Stolik } from './stolik.entity';
-import { Restauracja } from './restauracja.entity';
+import { Klient } from '../klient/klient.entity';
+import { Pracownik } from '../pracownik/pracownik.entity';
+import { Stolik } from '../stolik/stolik.entity';
+import { Restauracja } from '../restauracja/restauracja.entity';
 
 @Entity('rezerwacja')
 export class Rezerwacja {

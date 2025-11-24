@@ -3,11 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Rezerwacja } from './entities/rezerwacja.entity';
-import { Klient } from './entities/klient.entity';
-import { Pracownik } from './entities/pracownik.entity';
-import { Stolik } from './entities/stolik.entity';
-import { Restauracja } from './entities/restauracja.entity';
+import { Rezerwacja } from './rezerwacja/rezerwacja.entity';
+import { Klient } from './klient/klient.entity';
+import { Pracownik } from './pracownik/pracownik.entity';
+import { Stolik } from './stolik/stolik.entity';
+import { Restauracja } from './restauracja/restauracja.entity';
 import { AppDataSource } from './data-source';
 
 @Module({

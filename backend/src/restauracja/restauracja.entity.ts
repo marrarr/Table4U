@@ -1,28 +1,28 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Rezerwacja } from './rezerwacja.entity';
+import { Rezerwacja } from '../rezerwacja/rezerwacja.entity';
 
-@Entity('klient')
-export class Klient {
+@Entity('restauracja')
+export class Restauracja {
   @PrimaryGeneratedColumn()
-  klient_id: number;
+  restauracja_id: number;
 
   @Column({
     type: 'varchar',
     nullable: false,
   })
-  imie: string;
+  nazwa: string;
 
   @Column({
     type: 'varchar',
     nullable: false,
   })
-  nazwisko: string;
+  adres: string;
 
   @Column({
     type: 'varchar',
     nullable: false,
   })
-  telefon: string;
+  nr_kontaktowy: string;
 
   @Column({
     type: 'varchar',
@@ -30,6 +30,12 @@ export class Klient {
   })
   email: string;
 
-  @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.klient)
+  @Column({
+    nullable: true,
+    type: 'mediumblob',
+  })
+  zdjecie: Buffer;
+
+  @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.restauracja)
   rezerwacje: Rezerwacja[];
 }
