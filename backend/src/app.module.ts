@@ -1,21 +1,34 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { RestaurantModule } from './restaurant/restaurant.module';
-import { Restaurant } from './restaurant/restaurant.entity';
-import { dataSourceOptions } from './data-source';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { Rezerwacja } from './rezerwacja/rezerwacja.entity';
+import { Klient } from './klient/klient.entity';
+import { Pracownik } from './pracownik/pracownik.entity';
+import { Stolik } from './stolik/stolik.entity';
+import { Restauracja } from './restauracja/restauracja.entity';
+import { AppDataSource } from './data-source';
 
 @Module({
-  imports: [TypeOrmModule.forRoot({
-    ...(dataSourceOptions as TypeOrmModuleOptions),
-    migrations: [],
-    synchronize: false,
-    autoLoadEntities: true,
-  }),
-  RestaurantModule,
-],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: false,
+      envFilePath: '../.env',
+    }),
+    TypeOrmModule.forRoot({
+      ...AppDataSource.options,
+      autoLoadEntities: true,
+    }),
+    TypeOrmModule.forFeature([
+      Rezerwacja,
+      Klient,
+      Pracownik,
+      Stolik,
+      Restauracja,
+    ]),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

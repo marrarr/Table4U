@@ -6,21 +6,14 @@ import { config } from 'dotenv';
 
 config({ path: path.resolve(__dirname, '../.env') });
 
-export const dataSourceOptions: DataSourceOptions = {
+export const AppDataSource = new DataSource({
   type: 'mysql',
-  host: process.env.DATABASE_HOST,
+  host: process.env.DATABASE_HOST || '127.0.0.1',
   port: Number(process.env.DATABASE_PORT) || 3306,
-  username: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD || "",
-  database: process.env.DATABASE_SCHEMA || "table4u",
+  username: process.env.DATABASE_USER || 'root',
+  password: process.env.DATABASE_PASSWORD || '',
+  database: process.env.DATABASE_SCHEMA || 'table4u',
   synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   migrations: [path.resolve(__dirname, '../migrations/*.ts')],
-};
-
-export const AppDataSource = new DataSource(dataSourceOptions);
-
-
-
-
-//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
+});
