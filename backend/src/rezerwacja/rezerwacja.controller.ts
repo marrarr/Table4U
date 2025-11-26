@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { RezerwacjaService } from './rezerwacja.service';
-import { CreateRezerwacjaDto, UpdateRezerwacjaDto } from './rezerwacja.dto';
+import type { CreateRezerwacjaDto, UpdateRezerwacjaDto } from '../DTOs/rezerwacja.dto';
 import { Rezerwacja } from './rezerwacja.entity';
 
 @Controller('rezerwacja')

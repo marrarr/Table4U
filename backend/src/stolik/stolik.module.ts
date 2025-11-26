@@ -10,4 +10,4 @@ import { StolikiController } from './stolik.controller';
   providers: [StolikiService],
   exports: [StolikiService],
 })
-export class StolikiModule {}
+export class StolikModule {}

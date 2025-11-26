@@ -3,11 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Rezerwacja } from './rezerwacja/rezerwacja.entity';
-import { Klient } from './klient/klient.entity';
-import { Pracownik } from './pracownik/pracownik.entity';
-import { Stolik } from './stolik/stolik.entity';
-import { Restauracja } from './restauracja/restauracja.entity';
+import { RezerwacjaModule } from './rezerwacja/rezerwacja.module';
+import { RolaModule } from './rola/rola.module';
+import { UzytkownikModule } from './uzytkownik/uzytkownik.module';
+import { StolikModule } from './stolik/stolik.module';
+import { RestauracjaModule } from './restauracja/restauracja.module';
 import { AppDataSource } from './data-source';
 
 @Module({
@@ -22,11 +22,11 @@ import { AppDataSource } from './data-source';
       autoLoadEntities: true,
     }),
     TypeOrmModule.forFeature([
-      Rezerwacja,
-      Klient,
-      Pracownik,
-      Stolik,
-      Restauracja,
+      RezerwacjaModule,
+      UzytkownikModule,
+      RolaModule,
+      StolikModule,
+      RestauracjaModule,
     ]),
   ],
   controllers: [AppController],

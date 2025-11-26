@@ -1,4 +1,4 @@
-export class CreateRestauracjaDto {
+export interface CreateRestauracjaDto {
   nazwa: string;
   adres: string;
   nr_kontaktowy: string;
@@ -6,7 +6,7 @@ export class CreateRestauracjaDto {
   zdjecie?: Buffer;
 }
 
-export class UpdateRestauracjaDto {
+export interface UpdateRestauracjaDto {
   nazwa?: string;
   adres?: string;
   nr_kontaktowy?: string;

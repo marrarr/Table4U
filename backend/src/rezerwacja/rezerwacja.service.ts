@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Rezerwacja } from './rezerwacja.entity';
-import { CreateRezerwacjaDto, UpdateRezerwacjaDto } from './rezerwacja.dto';
+import { CreateRezerwacjaDto, UpdateRezerwacjaDto } from '../DTOs/rezerwacja.dto';
 
 @Injectable()
 export class RezerwacjaService {
@@ -18,14 +18,14 @@ export class RezerwacjaService {
 
   async findAll(): Promise<Rezerwacja[]> {
     return await this.rezerwacjaRepository.find({
-      relations: ['klient', 'pracownik', 'stolik', 'restauracja'],
+      relations: ['uzytkownik', 'stolik', 'restauracja'],
     });
   }
 
   async findOne(id: number): Promise<Rezerwacja> {
     const rezerwacja = await this.rezerwacjaRepository.findOne({
       where: { rezerwacja_id: id },
-      relations: ['klient', 'pracownik', 'stolik', 'restauracja'],
+      relations: ['uzytkownik', 'stolik', 'restauracja'],
     });
     if (!rezerwacja) {
       throw new NotFoundException(`Rezerwacja z ID ${id} nie znaleziona`);

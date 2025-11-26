@@ -5,8 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Klient } from '../klient/klient.entity';
-import { Pracownik } from '../pracownik/pracownik.entity';
+import { Uzytkownik } from '../uzytkownik/uzytkownik.entity';
 import { Stolik } from '../stolik/stolik.entity';
 import { Restauracja } from '../restauracja/restauracja.entity';
 
@@ -43,13 +42,10 @@ export class Rezerwacja {
   status: string;
 
   // Relacje z innymi tabelami
-  @ManyToOne(() => Klient)
-  @JoinColumn({ name: 'klient_id' })
-  klient: Klient;
 
-  @ManyToOne(() => Pracownik)
-  @JoinColumn({ name: 'pracownik_id' })
-  pracownik: Pracownik;
+  @ManyToOne(() => Uzytkownik)
+  @JoinColumn({ name: 'uzytkownik_id' })
+  uzytkownik: Uzytkownik;
 
   @ManyToOne(() => Stolik)
   @JoinColumn({ name: 'stolik_id' })
