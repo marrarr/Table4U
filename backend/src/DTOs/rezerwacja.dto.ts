@@ -1,6 +1,5 @@
-export class CreateRezerwacjaDto {
-  klient_id: number;
-  pracownik_id: number;
+export interface CreateRezerwacjaDto {
+  uzytkownik_id: number;
   stolik_id: number;
   restauracja_id: number;
   data_utworzenia: Date;
@@ -10,9 +9,8 @@ export class CreateRezerwacjaDto {
   status: string;
 }
 
-export class UpdateRezerwacjaDto {
-  klient_id?: number;
-  pracownik_id?: number;
+export interface UpdateRezerwacjaDto {
+  uzytkownik_id?: number;
   stolik_id?: number;
   restauracja_id?: number;
   data_utworzenia?: Date;

@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { StolikiService } from './stolik.service';
-import { CreateStolikDto } from './stolik.dto';
-import { UpdateStolikDto } from './stolik.dto';
+import type { CreateStolikDto,UpdateStolikDto } from '../DTOs/stolik.dto';
 import { Stolik } from './stolik.entity';
 
 @Controller('stoliki')

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 'typeorm';
 import { Rezerwacja } from '../rezerwacja/rezerwacja.entity';
+import { Uzytkownik } from 'src/uzytkownik/uzytkownik.entity';
 
 @Entity('restauracja')
 export class Restauracja {
@@ -38,4 +39,7 @@ export class Restauracja {
 
   @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.restauracja)
   rezerwacje: Rezerwacja[];
+
+  @ManyToMany(() => Uzytkownik, uzytkownik => uzytkownik.restauracje)
+  wlasciciele: Uzytkownik[];
 }

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Stolik } from './stolik.entity';
-import { CreateStolikDto, UpdateStolikDto } from './stolik.dto';
+import { CreateStolikDto, UpdateStolikDto } from '../DTOs/stolik.dto';
 
 @Injectable()
 export class StolikiService {
