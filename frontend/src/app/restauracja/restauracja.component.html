@@ -4,12 +4,16 @@
 
   <h2>Lista restauracji:</h2>
   <div>
+
+    <!-- Wywołanie metody szukającej restauracji -->
   <button
     pButton
     icon="pi pi-search"
     label="Szukaj restauracji"
     (click)="getRestaurant()">
   </button>
+
+  <!-- Zmiana zmiennej addingDialog na true powoduje otwarcie dialogu dodawania restauracji -->
   <button
   pButton
   icon="pi pi-search"
@@ -19,12 +23,12 @@
   </div>
   <ul>
     <li *ngFor="let restaurant of restaurant">
-      <strong>{{ restaurant.name }}</strong> - {{ restaurant.address }} (Rating: {{ restaurant.rating }})
+      <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }} (Nr kontaktowy: {{ restaurant.nr_kontaktowy }})(email: {{ restaurant.email }})
     </li>
   </ul>
 </div>
 
-
+<!-- Dialog dodawania restauracji, którego widocznosć jest zależna od zmiennej addingDialog -->
 <p-dialog
   [(visible)]="addingDialog"
   [header]="'Dodawanie restauracji'"
@@ -41,35 +45,41 @@
             type="text"
             pInputText
             id="name"
-            [(ngModel)]="newRestaurant.name"
-            name="name"
-            
+            [(ngModel)]="newRestaurant.nazwa" 
+            name="name"         
           />
+          <!-- ngModel odpowiada za dwukierunkowe wiązanie danych między modelem a widokiem tak, że w momencie wpisania nazwy restauracji w pole input, wartość ta jest automatycznie przypisywana do właściwości newRestaurant.name w komponencie Angular. -->
         </div >
         <div class="field">
-          <label>address</label>
+          <label>adres</label>
           <input
             type="text"
             pInputText
-            [(ngModel)]="newRestaurant.address"
+            [(ngModel)]="newRestaurant.adres"
             name="address"
-    
           />
         </div>
         <div class="field">
-          <label>rating</label>
+          <label>nr kontaktowy</label>
           <input
             type="number"
             pInputNumber
-            [(ngModel)]="newRestaurant.rating"
-            name="rating"
-        
+            [(ngModel)]="newRestaurant.nr_kontaktowy"
+            name="kontaktowy" 
+          />
+        </div>
+        <div class="field">
+          <label>email</label>
+          <input
+            type="text"
+            pInputText
+            [(ngModel)]="newRestaurant.email"
+            name="email" 
           />
         </div>
       </div>
     </div>
   </ng-template>
-
   <ng-template pTemplate="footer">
     <button pButton label="Anuluj" (click)="addingDialog = false"></button>
     <button pButton label="Zapisz" (click)="saveRestaurant()"></button>

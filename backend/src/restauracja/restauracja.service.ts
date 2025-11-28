@@ -11,17 +11,17 @@ export class RestauracjaService {
     private readonly restauracjaRepository: Repository<Restauracja>,
   ) {}
 
-  async create(createRestauracjaDto: CreateRestauracjaDto): Promise<Restauracja> {
-    const restauracja = this.restauracjaRepository.create(createRestauracjaDto);
-    return await this.restauracjaRepository.save(restauracja);
+  async create(createRestauracjaDto: CreateRestauracjaDto): Promise<Restauracja> {            //metoda tworząca nową restaurację
+    const restauracja = this.restauracjaRepository.create(createRestauracjaDto);              //tworzenie nowej instancji restauracji na podstawie DTO
+    return await this.restauracjaRepository.save(restauracja);                                //zapisanie nowej restauracji w bazie danych         
   }
 
   async findAll(): Promise<Restauracja[]> {
-    return await this.restauracjaRepository.find();
+    return await this.restauracjaRepository.find();                                            //metoda pobierająca listę wszystkich restauracji            
   }
 
   async findOne(id: number): Promise<Restauracja> {
-    const restauracja = await this.restauracjaRepository.findOne({
+    const restauracja = await this.restauracjaRepository.findOne({                            //metoda pobierająca jedną restaurację na podstawie jej ID
       where: { restauracja_id: id },
     });
     if (!restauracja) {
@@ -30,16 +30,16 @@ export class RestauracjaService {
     return restauracja;
   }
 
-  async upsert(id: number, updateRestauracjaDto: UpdateRestauracjaDto): Promise<Restauracja> {
-    const restauracja = await this.restauracjaRepository.findOne({
-      where: { restauracja_id: id },
+  async upsert(id: number, updateRestauracjaDto: UpdateRestauracjaDto): Promise<Restauracja> {    //metoda aktualizująca dane restauracji na podstawie jej ID           
+    const restauracja = await this.restauracjaRepository.findOne({                                //sprawdzenie czy restauracja o podanym ID istnieje
+      where: { restauracja_id: id },                                                              
     });
 
-    if (restauracja) {
+    if (restauracja) {                                                                            //jeśli istnieje, aktualizujemy jej dane                  
       Object.assign(restauracja, updateRestauracjaDto);
-      return await this.restauracjaRepository.save(restauracja);
+      return await this.restauracjaRepository.save(restauracja);                                  
     } else {
-      const newRestauracja = this.restauracjaRepository.create({
+      const newRestauracja = this.restauracjaRepository.create({                                //jeśli nie istnieje, tworzymy nową restaurację z podanym ID                 
         restauracja_id: id,
         ...updateRestauracjaDto,
       });
