@@ -82,6 +82,7 @@ checklogged()
   if (token) {
     const decoded: any = jwtDecode(token);
     this.isLoggedin = true;
+    console.log('Logged in as:', decoded.username);
   } else {
     this.isLoggedin = false;
   }
