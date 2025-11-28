@@ -17,9 +17,9 @@ export class UzytkownikController {
     return this.uzytkownikService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<Uzytkownik> {
-    return this.uzytkownikService.findOne(+id);
+  @Get(':username')
+  findOne(@Param('username') username: string): Promise<Uzytkownik> {
+    return this.uzytkownikService.findOneByUsername(username);
   }
 
   @Put(':id')

@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
   providedIn: 'root',
 })
 export class RestaurantService {
-  private apiUrl = 'http://localhost:3000/restaurants'; // URL Twojego backendu
+  private apiUrl = 'http://localhost:3000/restaurants'; 
 
   constructor(private http: HttpClient) {}
 

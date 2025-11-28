@@ -13,7 +13,6 @@ export class RestaurantService {
 
   async findAll(): Promise<Restaurant[]> {
     const restaurants = await this.restaurantRepository.find();
-    console.log(restaurants);
     return restaurants;
   }
   

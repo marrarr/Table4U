@@ -9,7 +9,7 @@ export interface CreateUzytkownikDto {
   confirmed: boolean;
 }
 
-export interface UpdateUzytkownikDto {
+export interface Uzytkownik {
   imie?: string;
   nazwisko?: string;
   email?: string;

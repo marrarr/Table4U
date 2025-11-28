@@ -1,0 +1,112 @@
+<div class="home">
+    <h1>{{ title() }}</h1>
+    <p>To jest strona startowa Twojej aplikacji Angular.</p>
+
+    <h2>Lista restauracji:</h2>
+    <div>
+        <button pButton icon="pi pi-search" label="Zaloguj" (click)="loginDialog = true">
+        </button>
+        <button pButton icon="pi pi-search" label="Zarejestruj" (click)="addingDialog = true">
+        </button>
+         <button pButton icon="pi pi-search" label="Czy zalogowany?" (click)="checklogged()">
+        </button>
+    </div>
+</div>
+
+
+<p-dialog [(visible)]="addingDialog" [header]="'Rejestracja'" [modal]="true" [styleClass]="'my-dialog'">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <div class="field">
+                <h4>Twoje dane</h4>
+                <div class="field">
+                    <label for="Login">Login</label>
+                    <input 
+                    type="text" 
+                    pInputText 
+                    id="Login" [(ngModel)]="newUser.login" 
+                    name="Login" />
+                </div>
+                <div class="field">
+                    <label>Hasło</label>
+                    <input 
+                    type="password" 
+                    pInputText 
+                    [(ngModel)]="newUser.haslo" 
+                    name="haslo" 
+                    placeholder="Wprowadź hasło" />
+                </div>
+                <div class="field">
+                    <label>imie</label>
+                    <input 
+                    type="string" 
+                    pInputText [(ngModel)]="newUser.imie" 
+                    name="imie" />
+                </div>
+                <div class="field">
+                    <label>nazwisko</label>
+                    <input 
+                    type="string" 
+                    pInputText 
+                    [(ngModel)]="newUser.nazwisko" 
+                    name="nazwisko" />
+                </div>
+                <div class="field">
+                    <label>email</label>
+                    <input 
+                    type="string" 
+                    pInputText 
+                    [(ngModel)]="newUser.email" 
+                    name="email" />
+                </div>
+                <div class="field">
+                    <label>telefon</label>
+                    <input 
+                    type="number" 
+                    pInputNumber 
+                    [(ngModel)]="newUser.telefon" 
+                    name="telefon" />
+                </div>
+
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Anuluj" (click)="addingDialog = false"></button>
+        <button pButton label="Zapisz" (click)="register()"></button>
+    </ng-template>
+</p-dialog>
+<p-dialog [(visible)]="loginDialog" [header]="'Logowanie'" [modal]="true" [styleClass]="'my-dialog'">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <div class="field">
+                <h4>Twoje dane</h4>
+                <div class="field">
+                    <label>Login</label>
+                    <input 
+                    type="text" 
+                    pInputText 
+                    [(ngModel)]="user.login" 
+                    name="Login"
+                    placeholder="Wprowadź login" />
+                </div>
+                <div class="field">
+                    <label>Hasło</label>
+                    <input 
+                    type="password" 
+                    pInputText 
+                    [(ngModel)]="user.haslo" 
+                    name="haslo" 
+                    placeholder="Wprowadź hasło" />
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Anuluj" (click)="loginDialog = false"></button>
+        <button pButton label="Zapisz" (click)="login()"></button>
+    </ng-template>
+</p-dialog>
+<p-toast></p-toast>

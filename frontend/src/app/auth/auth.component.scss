@@ -1,0 +1,49 @@
+.home {
+    text-align: center;
+    padding: 2rem;
+    background-color: antiquewhite;
+  }
+  button{
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: rgb(103, 212, 255);
+      border-radius: 4px;
+      font-weight: bold;
+      // margin-top: 0.5rem;
+      height: 4rem;
+      margin-right: 15px;
+    
+  }
+  button:hover{
+    background-color: rgb(39, 122, 155);
+  }
+/* Cały dialog */
+.my-dialog {
+  border-radius: 8px !important;
+}
+
+/* Treść dialogu */
+.my-dialog .p-dialog-content {
+  background-color: #fff !important;
+  padding: 1.5rem !important;
+}
+
+/* Stopka */
+.my-dialog .p-dialog-footer {
+  background-color: #f7f7f7 !important;
+  text-align: right;
+  padding: 1rem !important;
+}
+
+/* Nagłówek */
+.my-dialog .p-dialog-header {
+  background-color: #007ad9 !important;
+  color: #fff !important;
+  font-size: 1.2rem;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+.field{
+  margin-bottom: 10px;
+}

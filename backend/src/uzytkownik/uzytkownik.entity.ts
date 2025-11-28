@@ -29,6 +29,9 @@ export class Uzytkownik {
   @Column({ name: 'rola_id' })
   rola_id: number;
 
+  @Column({type: 'boolean'})
+  confirmed: boolean;
+
   @ManyToOne(() => Rola, rola => rola.uzytkownik)
   @JoinColumn({ name: 'rola_id' })
   rola: Rola;
