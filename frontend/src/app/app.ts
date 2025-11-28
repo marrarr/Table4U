@@ -18,12 +18,13 @@ import 'primeicons/primeicons.css';
 })
 export class App {
   constructor(private router: Router) {}
-
+  isLoggedin: boolean = false;
   public buttons = [
     { label: 'Strona Główna', link: '/', icon: 'pi pi-home' },
     { label: 'Kontakt', link: '/contact', icon: 'pi pi-envelope' },
     { label: 'O nas', link: '/about', icon: 'pi pi-info-circle' },
     { label: 'Restauracje', link: '/restaurant', icon: 'pi pi-cloud' },
+    { label: 'Rejestruj', link: '/auth', icon: 'pi pi-cloud' }
   ];
   
   openLink(url: string) {

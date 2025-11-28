@@ -6,9 +6,12 @@ import { AppService } from './app.service';
 import { RezerwacjaModule } from './rezerwacja/rezerwacja.module';
 import { RolaModule } from './rola/rola.module';
 import { UzytkownikModule } from './uzytkownik/uzytkownik.module';
+import { UzytkownikService } from './uzytkownik/uzytkownik.service';
 import { StolikModule } from './stolik/stolik.module';
 import { RestauracjaModule } from './restauracja/restauracja.module';
 import { AppDataSource } from './data-source';
+import { AuthModule } from './auth/auth.module';
+import { Uzytkownik } from './uzytkownik/uzytkownik.entity';
 
 @Module({
   imports: [
@@ -21,13 +24,12 @@ import { AppDataSource } from './data-source';
       ...AppDataSource.options,
       autoLoadEntities: true,
     }),
-    TypeOrmModule.forFeature([
-      RezerwacjaModule,
-      UzytkownikModule,
-      RolaModule,
-      StolikModule,
-      RestauracjaModule,
-    ]),
+    RezerwacjaModule,
+    UzytkownikModule,
+    RolaModule,
+    StolikModule,
+    RestauracjaModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

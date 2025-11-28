@@ -3,18 +3,31 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Uzytkownik } from '../uzytkownik/uzytkownik.entity';
 import { CreateUzytkownikDto, UpdateUzytkownikDto } from '../DTOs/uzytkownik.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UzytkownikService {
   constructor(
     @InjectRepository(Uzytkownik)
     private readonly uzytkownikRepository: Repository<Uzytkownik>,
-  ) {}
+  ) { }
+  private users: Uzytkownik[] = [];
+  private idCounter = 1;
 
   async create(createUzytkownikDto: CreateUzytkownikDto): Promise<Uzytkownik> {
-    const uzytkownik = this.uzytkownikRepository.create(createUzytkownikDto);
-    return await this.uzytkownikRepository.save(uzytkownik);
-  }
+    try {
+        createUzytkownikDto.haslo = await bcrypt.hash(createUzytkownikDto.haslo, 10);
+        const uzytkownik = this.uzytkownikRepository.create({
+            ...createUzytkownikDto,
+            rola: { rola_id: createUzytkownikDto.rola_id }
+        });
+        return await this.uzytkownikRepository.save(uzytkownik);
+    } catch (error) {
+        console.error(error);
+        throw new Error('Nie udało się utworzyć użytkownika');
+    }
+}
+
 
   async findAll(): Promise<Uzytkownik[]> {
     return await this.uzytkownikRepository.find({
@@ -22,13 +35,13 @@ export class UzytkownikService {
     });
   }
 
-  async findOne(id: number): Promise<Uzytkownik> {
+  async findOneByUsername(username: string): Promise<Uzytkownik> {
     const uzytkownik = await this.uzytkownikRepository.findOne({
-      where: { uzytkownik_id: id },
+      where: { login: username },
       relations: ['rola'],
     });
     if (!uzytkownik) {
-      throw new NotFoundException(`Użytkownik z ID ${id} nie znaleziony`);
+      throw new NotFoundException(`Użytkownik: ${username} nie znaleziony`);
     }
     return uzytkownik;
   }
