@@ -7,6 +7,7 @@ export interface CreateRestauracjaDto {
 }
 
 export interface UpdateRestauracjaDto {
+  restauracja_id?: number;
   nazwa?: string;
   adres?: string;
   nr_kontaktowy?: string;

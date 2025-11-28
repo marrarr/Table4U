@@ -20,10 +20,19 @@
   label="Dodaj restauracje"
   (click)="addingDialog = true">
 </button>
+
+      
   </div>
   <ul>
     <li *ngFor="let restaurant of restaurant">
       <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }} (Nr kontaktowy: {{ restaurant.nr_kontaktowy }})(email: {{ restaurant.email }})
+      <button
+      pButton
+      icon="pi pi-pencil"
+      label="Edytuj"
+      class="p-button-sm p-button-warning"
+      (click)="openEditDialog(restaurant)">
+    </button>
     </li>
   </ul>
 </div>
@@ -83,5 +92,42 @@
   <ng-template pTemplate="footer">
     <button pButton label="Anuluj" (click)="addingDialog = false"></button>
     <button pButton label="Zapisz" (click)="saveRestaurant()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="editingDialog"
+  [header]="'Edytowanie restauracji'"
+  [modal]="true"
+  [styleClass]="'my-dialog'">
+  <ng-template pTemplate="content">
+    <div class="field">
+      <h4>Edytuj dane restauracji</h4>
+
+      <div class="field">
+        <label>Nazwa</label>
+        <input type="text" pInputText [(ngModel)]="editedRestaurant.nazwa" />
+      </div>
+
+      <div class="field">
+        <label>Adres</label>
+        <input type="text" pInputText [(ngModel)]="editedRestaurant.adres" />
+      </div>
+
+      <div class="field">
+        <label>Nr kontaktowy</label>
+        <input type="number" pInputNumber [(ngModel)]="editedRestaurant.nr_kontaktowy" />
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="text" pInputText [(ngModel)]="editedRestaurant.email" />
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Anuluj" (click)="editingDialog = false"></button>
+    <button pButton label="Zapisz"(click)="updateRestaurant()"></button>
   </ng-template>
 </p-dialog>

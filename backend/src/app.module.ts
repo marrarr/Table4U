@@ -13,6 +13,7 @@ import { AppDataSource } from './data-source';
 import { AuthModule } from './auth/auth.module';
 import { Uzytkownik } from './uzytkownik/uzytkownik.entity';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({

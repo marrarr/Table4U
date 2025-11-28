@@ -19,4 +19,7 @@ export class RestauracjaService {
   createRestaurant(data: Partial<CreateRestauracjaDto>): Promise<Restauracja> {               //metoda tworząca nową restaurację       
     return firstValueFrom(this.http.post<CreateRestauracjaDto>(this.apiUrl, data));
   }
+  updateRestaurant(id: number, data: Partial<Restauracja>): Promise<Restauracja> {
+  return firstValueFrom(this.http.put<Restauracja>(`${this.apiUrl}/${id}`, data));
+}
 }
