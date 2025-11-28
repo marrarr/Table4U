@@ -23,7 +23,7 @@ export class App {
     { label: 'Strona Główna', link: '/', icon: 'pi pi-home' },
     { label: 'Kontakt', link: '/contact', icon: 'pi pi-envelope' },
     { label: 'O nas', link: '/about', icon: 'pi pi-info-circle' },
-    { label: 'Restauracje', link: '/restaurant', icon: 'pi pi-cloud' },
+    { label: 'Restauracje', link: '/restauracja', icon: 'pi pi-cloud' },
     { label: 'Rejestruj', link: '/auth', icon: 'pi pi-cloud' }
   ];
   
