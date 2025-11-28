@@ -12,7 +12,6 @@ import { RestauracjaModule } from './restauracja/restauracja.module';
 import { AppDataSource } from './data-source';
 import { AuthModule } from './auth/auth.module';
 import { Uzytkownik } from './uzytkownik/uzytkownik.entity';
-import { RestaurantModule } from './restaurant/restaurant.module';
 
 @Module({
   imports: [
@@ -31,7 +30,6 @@ import { RestaurantModule } from './restaurant/restaurant.module';
     StolikModule,
     RestauracjaModule,
     AuthModule,
-    RestaurantModule
   ],
   controllers: [AppController],
   providers: [AppService],
