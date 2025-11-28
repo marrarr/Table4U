@@ -76,7 +76,6 @@ export class RestauracjaComponent implements OnInit {
   }
 
   openEditDialog(restaurant: Restauracja) {
-    console.log(restaurant.restauracja_id);
     this.editedRestaurant = { ...restaurant }; // kopia obiektu
     this.editingDialog = true;
   }
