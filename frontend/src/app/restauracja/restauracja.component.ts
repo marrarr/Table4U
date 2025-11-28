@@ -22,8 +22,18 @@ export class RestauracjaComponent implements OnInit {
 
   restaurant: Restauracja[] = [];
   addingDialog = false;
+  editingDialog = false;
 
   newRestaurant: CreateRestauracjaDto = {
+    nazwa: '',
+    adres: '',
+    nr_kontaktowy: '',
+    email: '',
+    zdjecie: null
+  };
+
+  editedRestaurant: Restauracja = {
+    restauracja_id: 0,
     nazwa: '',
     adres: '',
     nr_kontaktowy: '',
@@ -64,4 +74,29 @@ export class RestauracjaComponent implements OnInit {
       alert('Wypełnij wszystkie pola!');
     }
   }
+
+  openEditDialog(restaurant: Restauracja) {
+    console.log(restaurant.restauracja_id);
+    this.editedRestaurant = { ...restaurant }; // kopia obiektu
+    this.editingDialog = true;
+  }
+  
+  async updateRestaurant() {
+  try {
+    const updated = await this.restauracjaService.updateRestaurant(
+      this.editedRestaurant.restauracja_id!,
+      this.editedRestaurant
+    );
+
+    
+    const index = this.restaurant.findIndex(r => r.restauracja_id === updated.restauracja_id);
+    if (index !== -1) this.restaurant[index] = updated;
+
+    this.editingDialog = false;
+
+  } catch (error) {
+    console.error('Błąd podczas aktualizacji restauracji:', error);
+  }
 }
+}
+
