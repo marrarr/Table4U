@@ -6,10 +6,6 @@
     <div>
         <button pButton icon="pi pi-search" label="Zaloguj" (click)="loginDialog = true">
         </button>
-        <button pButton icon="pi pi-search" label="Zarejestruj" (click)="addingDialog = true">
-        </button>
-         <button pButton icon="pi pi-search" label="Czy zalogowany?" (click)="checklogged()">
-        </button>
     </div>
 </div>
 
@@ -74,6 +70,7 @@
 
     <ng-template pTemplate="footer">
         <button pButton label="Anuluj" (click)="addingDialog = false"></button>
+        <button pButton label="Zaloguj" (click)="switchToLogin()"></button>
         <button pButton label="Zapisz" (click)="register()"></button>
     </ng-template>
 </p-dialog>
@@ -106,7 +103,8 @@
 
     <ng-template pTemplate="footer">
         <button pButton label="Anuluj" (click)="loginDialog = false"></button>
-        <button pButton label="Zapisz" (click)="login()"></button>
+        <button pButton label="Zarejestruj" (click)="switchToRegister()"></button>
+        <button pButton label="Zaloguj" (click)="login()"></button>
     </ng-template>
 </p-dialog>
 <p-toast></p-toast>
