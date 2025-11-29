@@ -88,5 +88,15 @@ checklogged()
   }
 }
 
+switchToRegister() {
+  this.loginDialog = false;
+  this.addingDialog = true;
+}
+
+switchToLogin() {
+  this.addingDialog = false;
+  this.loginDialog = true;
+}
+
   protected readonly title = signal('Witaj na stronie onas!');
 }

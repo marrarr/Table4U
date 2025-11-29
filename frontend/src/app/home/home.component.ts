@@ -1,16 +1,74 @@
-import { Component, signal } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { InputTextModule } from 'primeng/inputtext';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { HttpClientModule } from '@angular/common/http';
+import { RestauracjaService } from './restauracja.service'; // Zmieniona ścieżka
+import { Restauracja } from '../models/restauracja.model'; // Zmieniona ścieżka
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ButtonModule, CommonModule],
+  imports: [
+    CommonModule, 
+    ButtonModule, 
+    ProgressSpinnerModule, 
+    ToastModule,
+    HttpClientModule
+  ],
+  providers: [MessageService, RestauracjaService], // Dodaj serwis do providers
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
+  styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
-  protected readonly title = signal('Witaj na stronie startowej!');
+export class HomeComponent implements OnInit {
+  restauracje: Restauracja[] = [];
+  loading: boolean = false;
+
+  constructor(
+    private restauracjaService: RestauracjaService,
+    private messageService: MessageService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadRestauracje();
+  }
+
+  loadRestauracje(): void {
+    this.loading = true;
+    this.restauracjaService.getRestauracje().subscribe({
+      next: (restauracje: Restauracja[]) => {
+        this.restauracje = restauracje;
+        this.loading = false;
+      },
+      error: (error: any) => {
+        console.error('Błąd podczas ładowania restauracji:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Błąd',
+          detail: 'Nie udało się załadować listy restauracji'
+        });
+        this.loading = false;
+      }
+    });
+  }
+
+  showDetails(restauracja: Restauracja): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Szczegóły restauracji',
+      detail: `Wyświetlanie szczegółów: ${restauracja.nazwa}`
+    });
+    console.log('Szczegóły restauracji:', restauracja);
+  }
+
+  makeReservation(restauracja: Restauracja): void {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Rezerwacja',
+      detail: `Rozpoczynanie rezerwacji w: ${restauracja.nazwa}`
+    });
+    console.log('Rezerwacja w restauracji:', restauracja);
+  }
 }
