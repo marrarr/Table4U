@@ -1,14 +1,16 @@
 <main class="main">
-    <div class="header">
-      <button *ngFor="let btn of buttons" 
-        pButton 
-        type="button" 
-        [label]="btn.label" 
-        [icon]="btn.icon" 
-        (click)="openLink(btn.link)">
-    </button>
+  <div class="header">
+    <ng-container *ngFor="let btn of buttons">
+      <button *ngIf="canShowButton(btn)"
+              pButton
+              type="button"
+              [label]="btn.label"
+              [icon]="btn.icon"
+              (click)="openLink(btn)">
+      </button>
+    </ng-container>
+  </div>
 
-    </div>
   <div class="content">
     <router-outlet></router-outlet>
   </div>

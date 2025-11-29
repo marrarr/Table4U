@@ -14,12 +14,13 @@ import { AuthModule } from './auth/auth.module';
 import { Uzytkownik } from './uzytkownik/uzytkownik.entity';
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       ignoreEnvFile: false,
-      envFilePath: '../.env',
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       ...AppDataSource.options,

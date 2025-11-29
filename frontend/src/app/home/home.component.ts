@@ -5,8 +5,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { HttpClientModule } from '@angular/common/http';
-import { RestauracjaService } from './restauracja.service'; // Zmieniona ścieżka
-import { Restauracja } from '../models/restauracja.model'; // Zmieniona ścieżka
+import { RestauracjaService } from './restauracja.service'; 
+import { Restauracja } from '../models/restauracja.model'; 
 
 @Component({
   selector: 'app-home',
@@ -18,7 +18,7 @@ import { Restauracja } from '../models/restauracja.model'; // Zmieniona ścieżk
     ToastModule,
     HttpClientModule
   ],
-  providers: [MessageService, RestauracjaService], // Dodaj serwis do providers
+  providers: [MessageService, RestauracjaService],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
@@ -60,7 +60,6 @@ export class HomeComponent implements OnInit {
       summary: 'Szczegóły restauracji',
       detail: `Wyświetlanie szczegółów: ${restauracja.nazwa}`
     });
-    console.log('Szczegóły restauracji:', restauracja);
   }
 
   makeReservation(restauracja: Restauracja): void {
@@ -69,6 +68,5 @@ export class HomeComponent implements OnInit {
       summary: 'Rezerwacja',
       detail: `Rozpoczynanie rezerwacji w: ${restauracja.nazwa}`
     });
-    console.log('Rezerwacja w restauracji:', restauracja);
   }
 }

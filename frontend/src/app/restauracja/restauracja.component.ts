@@ -46,12 +46,12 @@ export class RestauracjaComponent implements OnInit {
   }
 
   async getRestaurant() {
-    try {
-      this.restaurant = await this.restauracjaService.getAllRestaurants();
-    } catch (error) {
-      console.error('Błąd podczas pobierania restauracji:', error);
-    }
+  try {
+    this.restaurant = await this.restauracjaService.getMyRestaurants();
+  } catch (error) {
+    console.error('Błąd podczas pobierania restauracji:', error);
   }
+}
 
   async saveRestaurant() {
     if (this.newRestaurant.nazwa && this.newRestaurant.adres && this.newRestaurant.nr_kontaktowy && this.newRestaurant.email) {
@@ -76,7 +76,7 @@ export class RestauracjaComponent implements OnInit {
   }
 
   openEditDialog(restaurant: Restauracja) {
-    this.editedRestaurant = { ...restaurant }; // kopia obiektu
+    this.editedRestaurant = { ...restaurant }; 
     this.editingDialog = true;
   }
   

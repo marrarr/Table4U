@@ -3,16 +3,17 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { UzytkownikModule } from '../uzytkownik/uzytkownik.module';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
     JwtModule.register({ 
       secret: 'SECRET_KEY', 
-      signOptions: { expiresIn: '1h' } 
+      signOptions: { expiresIn: '1h' },
     }),
-    UzytkownikModule, // <-- importujemy moduł z serwisem i repozytorium
+    UzytkownikModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService], // <-- TYLKO AuthService, serwis użytkownika wstrzykiwany z UzytkownikModule
+  providers: [AuthService, JwtStrategy], 
 })
 export class AuthModule {}
