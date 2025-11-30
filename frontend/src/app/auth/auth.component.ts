@@ -88,14 +88,20 @@ checklogged()
   }
 }
 
-switchToRegister() {
-  this.loginDialog = false;
-  this.addingDialog = true;
+switchToLogin(event?: Event) {
+    if (event) {
+        event.preventDefault();
+    }
+    this.addingDialog = false;
+    this.loginDialog = true;
 }
 
-switchToLogin() {
-  this.addingDialog = false;
-  this.loginDialog = true;
+switchToRegister(event?: Event) {
+    if (event) {
+        event.preventDefault();
+    }
+    this.loginDialog = false;
+    this.addingDialog = true;
 }
 
   protected readonly title = signal('Witaj na stronie onas!');
