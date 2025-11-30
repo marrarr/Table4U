@@ -53,4 +53,23 @@ export class RestauracjaService {
       throw new NotFoundException(`Restauracja z ID ${id} nie znaleziona`);
     }
   }
+
+  // metoda pobierająca wszystkie restauracje wraz z obrazami z repo
+  async findAllWithImages(): Promise<Restauracja[]> {
+    return await this.restauracjaRepository.find({
+      relations: ['obrazy']
+    });                                           
+  }
+
+  // metoda pobierająca restauracje po id wraz z obrazami z repo
+  async findOneWithImages(id: number): Promise<Restauracja> {
+    const restauracja = await this.restauracjaRepository.findOne({     
+      where: { restauracja_id: id },
+      relations: ['obrazy'],
+    });
+    if (!restauracja) {
+      throw new NotFoundException(`Restauracja z ID ${id} nie znaleziona`);
+    }
+    return restauracja;
+  }
 }
