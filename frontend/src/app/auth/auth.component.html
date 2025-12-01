@@ -64,16 +64,19 @@
                     name="telefon" />
                 </div>
 
+                <div class="field" style="margin-top: 1rem; text-align: center;">
+                    <span>Masz już konto? <a href="#" (click)="switchToLogin($event)" style="color: #007ad9; text-decoration: none;">Zaloguj się tutaj</a></span>
+                </div>
             </div>
         </div>
     </ng-template>
 
     <ng-template pTemplate="footer">
         <button pButton label="Anuluj" (click)="addingDialog = false"></button>
-        <button pButton label="Zaloguj" (click)="switchToLogin()"></button>
         <button pButton label="Zapisz" (click)="register()"></button>
     </ng-template>
 </p-dialog>
+
 <p-dialog [(visible)]="loginDialog" [header]="'Logowanie'" [modal]="true" [styleClass]="'my-dialog'">
     <ng-template pTemplate="content">
         <div class="field">
@@ -97,14 +100,18 @@
                     name="haslo" 
                     placeholder="Wprowadź hasło" />
                 </div>
+
+                <div class="field" style="margin-top: 1rem; text-align: center;">
+                    <span>Nie masz jeszcze konta? <a href="#" (click)="switchToRegister($event)" style="color: #007ad9; text-decoration: none;">Zrób je tutaj</a></span>
+                </div>
             </div>
         </div>
     </ng-template>
 
     <ng-template pTemplate="footer">
         <button pButton label="Anuluj" (click)="loginDialog = false"></button>
-        <button pButton label="Zarejestruj" (click)="switchToRegister()"></button>
         <button pButton label="Zaloguj" (click)="login()"></button>
     </ng-template>
 </p-dialog>
+
 <p-toast></p-toast>
