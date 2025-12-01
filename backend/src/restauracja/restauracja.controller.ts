@@ -35,13 +35,14 @@ export class RestauracjaController {
     return this.restauracjaService.remove(+id);                                          //metoda usuwająca restaurację na podstawie jej ID                  
   }
 
-  @Get(':id')
+  @Get(':id/z-obrazami')
   findOneWithImages(@Param('id') id: string): Promise<Restauracja> {
     return this.restauracjaService.findOneWithImages(+id);
   }
 
-  @Get()
+  @Get('z-obrazami')
   findAllWithImages(): Promise<Restauracja[]> {
     return this.restauracjaService.findAllWithImages();
   }
+
 }
