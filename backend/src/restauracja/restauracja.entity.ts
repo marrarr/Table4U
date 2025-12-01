@@ -41,7 +41,7 @@ export class Restauracja {
   @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.restauracja)
   rezerwacje: Rezerwacja[];
 
-  @ManyToMany(() => Uzytkownik, uzytkownik => uzytkownik.restauracje)
+  @ManyToMany(() => Uzytkownik, uzytkownik => uzytkownik.restauracje, { cascade: true })
   wlasciciele: Uzytkownik[];
 
   @OneToMany(() => restauracjaObraz, obraz => obraz.restauracja, {

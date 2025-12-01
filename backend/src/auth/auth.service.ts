@@ -20,8 +20,7 @@ export class AuthService {
         const valid = await bcrypt.compare(password, user.haslo);
         if (!valid) throw new UnauthorizedException('Wrong password');
 
-        const payload = { username: user.login, sub: user.uzytkownik_id };
-        console.log('User logged in:', username);
+        const payload = { username: user.login, sub: user.uzytkownik_id, role: user.rola?.nazwa };
         return { access_token: this.jwt.sign(payload) };
     }
 }

@@ -16,12 +16,13 @@ import { RestauracjaObrazModule } from './restauracja/obrazy/restauracjaObraz.mo
 import { MulterModule } from '@nestjs/platform-express';
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       ignoreEnvFile: false,
-      envFilePath: '../.env',
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       ...AppDataSource.options,

@@ -13,6 +13,10 @@ import { MessageService } from 'primeng/api';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastModule } from 'primeng/toast';
 import { jwtDecode } from 'jwt-decode';
+import { Router } from '@angular/router';
+import { App } from '../app';
+import { take, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -25,7 +29,9 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthComponent {
 constructor(
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router,
+    private appComponent: App
 ) {}
     addingDialog: boolean = false;
     loginDialog: boolean = false;
@@ -47,16 +53,31 @@ constructor(
 login() {
   if (!this.user.login || !this.user.haslo) {
     this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Błąd', 
-        detail: 'Login i hasło są wymagane!' 
-      });
+      severity: 'error', 
+      summary: 'Błąd', 
+      detail: 'Login i hasło są wymagane!' 
+    });
     return;
   }
 
   this.authService.login(this.user.login, this.user.haslo)
+    .pipe(
+      catchError(err => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Błąd logowania',
+          detail: 'Niepoprawny login lub hasło'
+        });
+        return of(null);
+      })
+    )
     .subscribe(res => {
-      this.authService.setToken(res.access_token);
+      if (res) {
+        this.router.navigateByUrl('/');
+        this.authService.userRole$.pipe(take(1)).subscribe(role => {
+          this.appComponent.userRole = role;
+        });
+      }
     });
 }
 
@@ -82,10 +103,19 @@ checklogged()
   if (token) {
     const decoded: any = jwtDecode(token);
     this.isLoggedin = true;
-    console.log('Logged in as:', decoded.username);
   } else {
     this.isLoggedin = false;
   }
+}
+
+switchToRegister() {
+  this.loginDialog = false;
+  this.addingDialog = true;
+}
+
+switchToLogin() {
+  this.addingDialog = false;
+  this.loginDialog = true;
 }
 
   protected readonly title = signal('Witaj na stronie onas!');

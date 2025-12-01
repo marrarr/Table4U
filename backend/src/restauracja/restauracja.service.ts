@@ -15,10 +15,27 @@ export class RestauracjaService {
     const restauracja = this.restauracjaRepository.create(createRestauracjaDto);              //tworzenie nowej instancji restauracji na podstawie DTO
     return await this.restauracjaRepository.save(restauracja);                                //zapisanie nowej restauracji w bazie danych         
   }
+  save(restauracja: Restauracja): Promise<Restauracja> {
+    return this.restauracjaRepository.save(restauracja);
+  }
 
   async findAll(): Promise<Restauracja[]> {
     return await this.restauracjaRepository.find();                                            //metoda pobierająca listę wszystkich restauracji            
   }
+   async findAllByUser(user: { username: string; role: string }): Promise<Restauracja[]> {
+  if (user.role === 'admin') {
+    return this.restauracjaRepository.find({ relations: ['wlasciciele'] });
+  } else if (user.role === 'owner') {
+    return this.restauracjaRepository
+      .createQueryBuilder('restauracja')
+      .leftJoinAndSelect('restauracja.wlasciciele', 'uzytkownik')
+      .where('uzytkownik.login = :login', { login: user.username })
+      .getMany();
+  } else {
+    return [];
+  }
+}
+
 
   async findOne(id: number): Promise<Restauracja> {
     const restauracja = await this.restauracjaRepository.findOne({                            //metoda pobierająca jedną restaurację na podstawie jej ID
