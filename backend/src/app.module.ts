@@ -12,6 +12,8 @@ import { RestauracjaModule } from './restauracja/restauracja.module';
 import { AppDataSource } from './data-source';
 import { AuthModule } from './auth/auth.module';
 import { Uzytkownik } from './uzytkownik/uzytkownik.entity';
+import { RestauracjaObrazModule } from './restauracja/obrazy/restauracjaObraz.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 
 
@@ -31,7 +33,9 @@ import { Uzytkownik } from './uzytkownik/uzytkownik.entity';
     RolaModule,
     StolikModule,
     RestauracjaModule,
+    RestauracjaObrazModule,
     AuthModule,
+    MulterModule.register({}),
   ],
   controllers: [AppController],
   providers: [AppService],

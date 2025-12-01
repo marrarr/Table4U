@@ -50,4 +50,15 @@ export class RestauracjaController {
   remove(@Param('id') id: string): Promise<void> {
     return this.restauracjaService.remove(+id);                                          //metoda usuwająca restaurację na podstawie jej ID                  
   }
+
+  @Get(':id/z-obrazami')
+  findOneWithImages(@Param('id') id: string): Promise<Restauracja> {
+    return this.restauracjaService.findOneWithImages(+id);
+  }
+
+  @Get('z-obrazami')
+  findAllWithImages(): Promise<Restauracja[]> {
+    return this.restauracjaService.findAllWithImages();
+  }
+
 }
