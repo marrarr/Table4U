@@ -9,13 +9,13 @@ html, body {
   min-height: 100vh; 
 }
 
-.header {
+.menu {
     height: 5rem;
     padding: 10px;
     background-color: rgb(54, 158, 255);
     width: 100%;
 }
-.header button {
+.menu button {
     cursor: pointer;
     padding: 0.5rem 1rem;
     border: none;
@@ -27,7 +27,7 @@ html, body {
     margin-right: 15px;
   }
   
-  .header button:hover {
+  .menu button:hover {
     background-color: #ddd;
   }
 
@@ -35,3 +35,11 @@ html, body {
   flex: 1; 
   padding: 2rem;
 }
+.header {
+  width: 100%;
+  height: 25rem;
+  background-image: url("header.png");
+  background-size: cover;
+  background-attachment: fixed;
+}
+

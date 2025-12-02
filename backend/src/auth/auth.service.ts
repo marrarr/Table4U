@@ -9,8 +9,16 @@ export class AuthService {
     constructor(private users: UzytkownikService, private jwt: JwtService) { }
 
     async register(createUzytkownikDto: CreateUzytkownikDto) {
-        const uzytkownik = await this.users.create(createUzytkownikDto)
-        return { id: uzytkownik.uzytkownik_id, username: uzytkownik.login };
+        console.log(createUzytkownikDto)
+        let uzytkownik;
+        try {
+            uzytkownik = await this.users.create(createUzytkownikDto)
+        }
+        catch (error) {
+            console.log(error)
+        }
+        
+        return { username: uzytkownik.login };
     }
 
     async login(username: string, password: string) {

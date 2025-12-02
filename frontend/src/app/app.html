@@ -1,5 +1,5 @@
 <main class="main">
-  <div class="header">
+  <div class="menu">
     <ng-container *ngFor="let btn of buttons">
       <button *ngIf="canShowButton(btn)"
               pButton
@@ -10,6 +10,10 @@
       </button>
     </ng-container>
   </div>
+  <div class="header">
+
+  </div>
+  
 
   <div class="content">
     <router-outlet></router-outlet>

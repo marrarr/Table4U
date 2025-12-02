@@ -92,6 +92,7 @@ register() {
       });
     return;
   }
+  console.log('payload: ', this.newUser)
   this.authService.register(this.newUser).subscribe(res => {
     this.addingDialog = false
   });
