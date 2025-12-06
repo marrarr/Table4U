@@ -7,11 +7,13 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+import { RezerwacjaStolikowComponent } from './layout/rezerwacja-stolikow.component';
+import { StolikKreatorComponent } from './layout/stolik-kreator.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ButtonModule, InputTextModule, HttpClientModule, CommonModule, DialogModule, FormsModule],
+  imports: [ButtonModule, InputTextModule, HttpClientModule, CommonModule, DialogModule, FormsModule, RezerwacjaStolikowComponent, StolikKreatorComponent],
   providers: [RestauracjaService],
   templateUrl: './restauracja.component.html',
   styleUrls: ['./restauracja.component.scss'],
@@ -23,6 +25,8 @@ export class RestauracjaComponent implements OnInit {
   restaurant: Restauracja[] = [];
   addingDialog = false;
   editingDialog = false;
+  stolikKreatorVisible = false;
+nowaRestauracjaId: number | null = null;
 
   newRestaurant: CreateRestauracjaDto = {
     nazwa: '',
@@ -54,26 +58,31 @@ export class RestauracjaComponent implements OnInit {
 }
 
   async saveRestaurant() {
-    if (this.newRestaurant.nazwa && this.newRestaurant.adres && this.newRestaurant.nr_kontaktowy && this.newRestaurant.email) {
-      try {
-        this.newRestaurant.zdjecie = '0';
-        const created = await this.restauracjaService.createRestaurant(this.newRestaurant);
-        this.restaurant.push(created);
-        this.newRestaurant = {
-          nazwa: '',
-          adres: '',
-          nr_kontaktowy: '',
-          email: '',
-          zdjecie: null
-        };
-        this.addingDialog = false;
-      } catch (error) {
-        console.error('Błąd przy dodawaniu restauracji:', error);
-      }
-    } else {
-      alert('Wypełnij wszystkie pola!');
+  if (this.newRestaurant.nazwa && this.newRestaurant.adres && this.newRestaurant.nr_kontaktowy && this.newRestaurant.email) {
+    try {
+      this.newRestaurant.zdjecie = '0';
+      const created = await this.restauracjaService.createRestaurant(this.newRestaurant);
+      this.restaurant.push(created);
+      
+      // Otwórz kreator dla nowej restauracji
+      this.nowaRestauracjaId = created.restauracja_id!;
+      this.stolikKreatorVisible = true;
+      
+      this.newRestaurant = {
+        nazwa: '',
+        adres: '',
+        nr_kontaktowy: '',
+        email: '',
+        zdjecie: null
+      };
+      this.addingDialog = false;
+    } catch (error) {
+      console.error('Błąd przy dodawaniu restauracji:', error);
     }
+  } else {
+    alert('Wypełnij wszystkie pola!');
   }
+}
 
   openEditDialog(restaurant: Restauracja) {
     this.editedRestaurant = { ...restaurant }; 

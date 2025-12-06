@@ -14,4 +14,3 @@
     email?: string;
     zdjecie?: string | ArrayBuffer | null;
   }
-  

@@ -1,0 +1,204 @@
+<div class="kreator-container">
+  <p-dialog [(visible)]="visible"
+           [modal]="true"
+           [style]="{ width: '95vw', height: '90vh' }"
+           [maximizable]="true"
+           header="Kreator układu sali">
+    
+    <div class="grid">
+      <div class="col-3">
+        <div class="card p-3">
+          <h4>Narzędzia</h4>
+          
+          <div class="flex flex-column gap-3">
+            <button pButton 
+                    label="Wybierz"
+                    [class.p-button-outlined]="tryb !== 'wybor'"
+                    (click)="tryb = 'wybor'"></button>
+            
+            <button pButton 
+                    label="Dodaj stolik"
+                    [class.p-button-outlined]="tryb !== 'stolik'"
+                    (click)="tryb = 'stolik'"></button>
+            
+            <button pButton 
+                    label="Dodaj element"
+                    [class.p-button-outlined]="tryb !== 'element'"
+                    (click)="tryb = 'element'"></button>
+          </div>
+          
+          <div *ngIf="tryb === 'stolik'" class="mt-4">
+            <h5>Ustawienia stolika</h5>
+            
+            <div class="field mb-3">
+              <label>Kształt</label>
+              <select [(ngModel)]="nowyStolik.ksztalt" class="w-full p-2 border-round">
+                <option value="okrag">Okrągły</option>
+                <option value="prostokat">Prostokątny</option>
+              </select>
+            </div>
+            
+            <div class="field mb-3">
+              <label>Ilość miejsc: {{ nowyStolik.ilosc_miejsc }}</label>
+              <input type="range" 
+                     [(ngModel)]="nowyStolik.ilosc_miejsc"
+                     min="1" 
+                     max="12" 
+                     class="w-full">
+            </div>
+            
+            <div *ngIf="nowyStolik.ksztalt === 'prostokat'" class="field mb-3">
+              <label>Szerokość: {{ nowyStolik.szerokosc }}%</label>
+              <input type="range" 
+                     [(ngModel)]="nowyStolik.szerokosc"
+                     min="4" 
+                     max="20" 
+                     class="w-full">
+            </div>
+            
+            <div *ngIf="nowyStolik.ksztalt === 'prostokat'" class="field mb-3">
+              <label>Wysokość: {{ nowyStolik.wysokosc }}%</label>
+              <input type="range" 
+                     [(ngModel)]="nowyStolik.wysokosc"
+                     min="4" 
+                     max="20" 
+                     class="w-full">
+            </div>
+            
+            <div *ngIf="nowyStolik.ksztalt === 'okrag'" class="field mb-3">
+              <label>Promień: {{ nowyStolik.promien }}%</label>
+              <input type="range" 
+                     [(ngModel)]="nowyStolik.promien"
+                     min="3" 
+                     max="15" 
+                     class="w-full">
+            </div>
+          </div>
+          
+          <div *ngIf="tryb === 'element'" class="mt-4">
+            <h5>Ustawienia elementu</h5>
+            
+            <div class="field mb-3">
+              <label>Typ elementu</label>
+              <select [(ngModel)]="nowyElement.typ" class="w-full p-2 border-round">
+                <option value="okno">Okno</option>
+                <option value="drzwi">Drzwi</option>
+                <option value="bar">Bar</option>
+                <option value="ściana">Ściana</option>
+                <option value="roślina">Roślina</option>
+                <option value="inne">Inne</option>
+              </select>
+            </div>
+            
+            <div class="field mb-3">
+              <label>Szerokość: {{ nowyElement.szerokosc }}%</label>
+              <input type="range" 
+                     [(ngModel)]="nowyElement.szerokosc"
+                     min="2" 
+                     max="40" 
+                     class="w-full">
+            </div>
+            
+            <div class="field mb-3">
+              <label>Wysokość: {{ nowyElement.wysokosc }}%</label>
+              <input type="range" 
+                     [(ngModel)]="nowyElement.wysokosc"
+                     min="2" 
+                     max="40" 
+                     class="w-full">
+            </div>
+            
+            <div class="field mb-3">
+              <label>Kolor</label>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <div *ngFor="let kolor of kolory" 
+                     class="color-option border-round cursor-pointer"
+                     [style.backgroundColor]="kolor.value"
+                     [class.selected]="nowyElement.kolor === kolor.value"
+                     (click)="nowyElement.kolor = kolor.value">
+                  <span *ngIf="nowyElement.kolor === kolor.value" class="color-check">✓</span>
+                </div>
+              </div>
+              <input type="color" 
+                     [(ngModel)]="nowyElement.kolor" 
+                     class="w-full">
+            </div>
+          </div>
+          
+          <div class="mt-4 p-3 bg-gray-50 border-round">
+            <p class="font-bold">Podsumowanie:</p>
+            <p class="m-0">Stolików: {{ stoliki.length }}</p>
+            <p class="m-0">Elementów: {{ elementy.length }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-9">
+        <div class="card p-3 h-full">
+          <h4>Sala restauracji</h4>
+          <p class="text-500 mb-3">
+            <span *ngIf="tryb === 'stolik'">Kliknij w salę aby dodać stolik</span>
+            <span *ngIf="tryb === 'element'">Kliknij w salę aby dodać element</span>
+            <span *ngIf="tryb === 'wybor'">Wybierz narzędzie z panelu po lewej</span>
+          </p>
+          
+          <div class="sala-preview"
+               (click)="salaClick($event)"
+               [style.cursor]="tryb !== 'wybor' ? 'crosshair' : 'default'">
+            
+            <div *ngFor="let element of elementy; let i = index"
+                 class="element-dekoracyjny"
+                 [style.left.%]="element.pozycja_x"
+                 [style.top.%]="element.pozycja_y"
+                 [style.width.%]="element.szerokosc"
+                 [style.height.%]="element.wysokosc"
+                 [style.backgroundColor]="element.kolor"
+                 (click)="$event.stopPropagation()">
+              <span class="element-label">{{ element.typ }}</span>
+              <button pButton 
+                      icon="pi pi-times" 
+                      class="p-button-rounded p-button-danger p-button-sm element-delete"
+                      (click)="usunElement(i)"></button>
+            </div>
+            
+            <div *ngFor="let stolik of stoliki; let i = index"
+                 class="stolik-wrapper"
+                 [style.left.%]="stolik.pozycja_x"
+                 [style.top.%]="stolik.pozycja_y"
+                 (click)="$event.stopPropagation()">
+              
+              <div *ngIf="stolik.ksztalt === 'okrag'"
+                   class="stolik okrag"
+                   [style.width.px]="(stolik.promien || 6) * 10"
+                   [style.height.px]="(stolik.promien || 6) * 10">
+                <span class="stolik-text">{{ stolik.ilosc_miejsc }}</span>
+              </div>
+              
+              <div *ngIf="stolik.ksztalt === 'prostokat'"
+                   class="stolik prostokat"
+                   [style.width.%]="stolik.szerokosc"
+                   [style.height.%]="stolik.wysokosc">
+                <span class="stolik-text">{{ stolik.ilosc_miejsc }}</span>
+              </div>
+              
+              <div *ngFor="let k of [].constructor(stolik.ilosc_miejsc); let j = index"
+                   class="krzeslo"
+                   [style.transform]="obliczPozycjeKrzesla(j, stolik.ilosc_miejsc, stolik)">
+              </div>
+              
+              <button pButton 
+                      icon="pi pi-times" 
+                      class="p-button-rounded p-button-danger p-button-sm stolik-delete"
+                      (click)="usunStolik(i)"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <button pButton label="Anuluj" class="p-button-text" (click)="anuluj()"></button>
+      <button pButton label="Zapisz układ" class="p-button-success" (click)="zapiszUklad()"></button>
+    </ng-template>
+  </p-dialog>
+</div>

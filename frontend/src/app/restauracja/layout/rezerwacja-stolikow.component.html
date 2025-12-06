@@ -1,0 +1,234 @@
+<div class="rezerwacja-container">
+  
+  <!-- Sala restauracji -->
+  <div class="sala" (click)="pokazDialogStolik = false">
+    
+    <!-- Elementy dekoracyjne -->
+    <div *ngFor="let element of elementy"
+         class="element-sala"
+         [style.left.%]="element.pozycja_x"
+         [style.top.%]="element.pozycja_y"
+         [style.width.%]="element.szerokosc"
+         [style.height.%]="element.wysokosc"
+         [style.backgroundColor]="element.kolor">
+      <span class="element-label">{{ element.nazwa || element.typ }}</span>
+    </div>
+    
+    <!-- Stoliki -->
+    <div
+      *ngFor="let stolik of stoliki"
+      class="stolik-wrapper"
+      [style.left.%]="stolik.pozycja_x"
+      [style.top.%]="stolik.pozycja_y"
+      [class.zarezerwowany]="stolik.zarezerwowany && !trybWlasciciela"
+      [class.wybrany]="wybraneStoliki.includes(stolik)"
+      (click.stop)="wybierz(stolik)"
+      [ngClass]="{
+        'cursor-pointer': !stolik.zarezerwowany || trybWlasciciela,
+        'cursor-not-allowed': stolik.zarezerwowany && !trybWlasciciela
+      }"
+    >
+      
+      <!-- Stolik okrągły -->
+      <div *ngIf="stolik.ksztalt === 'okrag'"
+           class="stolik okrag"
+           [style.width.px]="(stolik.promien || 6) * 10"
+           [style.height.px]="(stolik.promien || 6) * 10">
+        <span class="numer-stolika">{{ stolik.stolik_id }}</span>
+        <span class="ilosc-miejsc">{{ stolik.ilosc_miejsc }}</span>
+      </div>
+      
+      <!-- Stolik prostokątny -->
+      <div *ngIf="stolik.ksztalt === 'prostokat'"
+           class="stolik prostokat"
+           [style.width.%]="stolik.szerokosc"
+           [style.height.%]="stolik.wysokosc">
+        <span class="numer-stolika">{{ stolik.stolik_id }}</span>
+        <span class="ilosc-miejsc">{{ stolik.ilosc_miejsc }}</span>
+      </div>
+      
+      <!-- Krzesła -->
+      <div
+        *ngFor="let krzeslo of [].constructor(stolik.ilosc_miejsc); let i = index"
+        class="krzeslo"
+        [style.transform]="obliczPozycjeKrzesla(i, stolik.ilosc_miejsc, stolik)"
+      ></div>
+      
+      <!-- Status rezerwacji -->
+      <div *ngIf="stolik.zarezerwowany" class="status-zarezerwowany">
+        <i class="pi pi-ban"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog wyboru stolika -->
+  <p-dialog
+    [(visible)]="pokazDialogStolik"
+    [modal]="true"
+    [closable]="false"
+    [style]="{ width: '340px' }"
+    header="Wybór stolika"
+  >
+    <div class="dialog-content">
+      <h3>Stolik nr {{ wybranyStolik?.stolik_id }}</h3>
+      <p><strong>Ilość miejsc:</strong> {{ wybranyStolik?.ilosc_miejsc }}</p>
+      <p><strong>Kształt:</strong> {{ wybranyStolik?.ksztalt === 'okrag' ? 'Okrągły' : 'Prostokątny' }}</p>
+      
+      <div *ngIf="wybranyStolik?.zarezerwowany && !trybWlasciciela" class="status status-zajety">
+        <i class="pi pi-ban"></i> Stolik zarezerwowany
+      </div>
+      
+      <div *ngIf="wybraneStoliki.includes(wybranyStolik!)" class="status status-wybrany">
+        <i class="pi pi-check"></i> Już dodany do rezerwacji
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Anuluj" class="p-button-text" (click)="pokazDialogStolik = false"></button>
+      <button
+        pButton
+        label="Dodaj do rezerwacji"
+        class="p-button-success"
+        [disabled]="wybraneStoliki.includes(wybranyStolik!) || (wybranyStolik?.zarezerwowany && !trybWlasciciela)"
+        (click)="dodajDoRezerwacji()"
+      ></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Podsumowanie wybranych stolików -->
+  <div class="podsumowanie" *ngIf="wybraneStoliki.length > 0">
+    <h3>Wybrane stoliki ({{ sumaMiejsc }} miejsc):</h3>
+    <div class="wybrane-lista">
+      <span *ngFor="let s of wybraneStoliki" class="tag">
+        Stolik {{ s.stolik_id }} ({{ s.ilosc_miejsc }} os.)
+        <button class="tag-remove" (click)="usunStolikZListy(s)">
+  <i class="pi pi-times"></i>
+</button>
+      </span>
+    </div>
+    
+    <div class="flex gap-3 mt-3">
+      <button pButton label="Wyczyść" class="p-button-text" (click)="wyczyscRezerwacje()"></button>
+      <button pButton label="Zatwierdź rezerwację" class="p-button-success" (click)="otworzFormularzRezerwacji()"></button>
+    </div>
+  </div>
+
+  <!-- Dialog formularza rezerwacji -->
+  <p-dialog
+    [(visible)]="pokazDialogRezerwacja"
+    [modal]="true"
+    [closable]="true"
+    [style]="{ width: '500px' }"
+    header="Dane rezerwacji"
+  >
+    <div class="grid p-fluid">
+      <div class="field col-12">
+        <label>Data rezerwacji *</label>
+        <input type="date" 
+               [(ngModel)]="daneRezerwacji.data"
+               [min]="minimalnaData"
+               [max]="maksymalnaData"
+               class="w-full p-2 border-round"
+               [class.invalid]="isPastDate(daneRezerwacji.data)">
+        <small *ngIf="isPastDate(daneRezerwacji.data)" class="text-red-500">
+          Nie można rezerwować stolików w przeszłości
+        </small>
+      </div>
+      
+      <div class="field col-12 md:col-6">
+        <label>Od godziny *</label>
+        <input type="time" 
+               [(ngModel)]="daneRezerwacji.godzinaOd"
+               class="w-full p-2 border-round"
+               min="10:00" 
+               max="23:00">
+      </div>
+      
+      <div class="field col-12 md:col-6">
+        <label>Do godziny *</label>
+        <input type="time" 
+               [(ngModel)]="daneRezerwacji.godzinaDo"
+               class="w-full p-2 border-round"
+               min="10:00" 
+               max="23:00">
+      </div>
+      
+      <div class="field col-12 md:col-6">
+        <label>Imię *</label>
+        <input pInputText 
+               [(ngModel)]="daneRezerwacji.imie" 
+               required
+               placeholder="np. Jan">
+      </div>
+      
+      <div class="field col-12 md:col-6">
+        <label>Nazwisko *</label>
+        <input pInputText 
+               [(ngModel)]="daneRezerwacji.nazwisko" 
+               required
+               placeholder="np. Kowalski">
+      </div>
+      
+      <div class="field col-12 md:col-6">
+        <label>Email *</label>
+        <input pInputText 
+               type="email" 
+               [(ngModel)]="daneRezerwacji.email" 
+               required
+               placeholder="np. jan@example.com">
+      </div>
+      
+      <div class="field col-12 md:col-6">
+        <label>Telefon *</label>
+        <input pInputText 
+               [(ngModel)]="daneRezerwacji.telefon" 
+               required
+               placeholder="np. 123456789">
+      </div>
+      
+      <div class="field col-12">
+        <label>Liczba osób *</label>
+        <p-inputNumber [(ngModel)]="daneRezerwacji.iloscOsob"
+                      [min]="1"
+                      [max]="sumaMiejsc"
+                      [showButtons]="true"
+                      class="w-full"></p-inputNumber>
+        <small class="text-500">
+          Maksymalnie {{ sumaMiejsc }} miejsc (wybrane stoliki: 
+          <span *ngFor="let s of wybraneStoliki; let last = last">
+            {{ s.stolik_id }}{{ !last ? ', ' : '' }}
+          </span>)
+        </small>
+      </div>
+      
+      <div class="field col-12">
+        <label>Uwagi (opcjonalnie)</label>
+        <textarea pInputTextarea 
+                  [(ngModel)]="daneRezerwacji.uwagi" 
+                  rows="3"
+                  class="w-full"
+                  placeholder="Specjalne życzenia, okazja, alergie..."></textarea>
+      </div>
+      
+      <div class="field col-12">
+        <div class="info-box">
+          <i class="pi pi-info-circle mr-2"></i>
+          <span>Rezerwacja będzie potwierdzona przez restaurację. Otrzymasz email z potwierdzeniem.</span>
+        </div>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <button pButton 
+              label="Anuluj" 
+              class="p-button-text" 
+              (click)="pokazDialogRezerwacja = false"></button>
+      <button pButton 
+              label="Złóż rezerwację" 
+              class="p-button-success" 
+              (click)="zatwierdzRezerwacje()"
+              [disabled]="isPastDate(daneRezerwacji.data)"></button>
+    </ng-template>
+  </p-dialog>
+
+</div>

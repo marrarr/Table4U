@@ -1,127 +1,154 @@
+<!-- src/app/restauracja/restauracja.component.html -->
 <div class="home">
   <h1>{{ title() }}</h1>
-  <p>To jest strona startowa Twojej aplikacji Angular.</p>
+  <p class="text-600">Zarządzaj swoimi restauracjami i rezerwacjami stolików</p>
 
-  <h2>Lista restauracji:</h2>
-  <div>
-
-    <!-- Wywołanie metody szukającej restauracji -->
-    <button pButton icon="pi pi-search" label="Szukaj restauracji" (click)="getRestaurant()">
+  <!-- Przyciski akcji -->
+  <div class="flex gap-3 my-4">
+    <button pButton
+            icon="pi pi-refresh"
+            label="Odśwież listę"
+            (click)="getRestaurant()"
+            class="p-button-outlined">
     </button>
 
-    <!-- Zmiana zmiennej addingDialog na true powoduje otwarcie dialogu dodawania restauracji -->
-    <button pButton icon="pi pi-search" label="Dodaj restauracje" (click)="addingDialog = true">
+    <button pButton
+            icon="pi pi-plus"
+            label="Dodaj nową restaurację"
+            class="p-button-success"
+            (click)="addingDialog = true">
     </button>
-
-
   </div>
-  <ul>
-    <div *ngFor="let restaurant of restaurant" class="restaurant-card">
-      <div class="restaurants-list">
-        
-          <div class="restaurant-header">
-            <h3>{{ restaurant.nazwa }}</h3>
-          </div>
 
-          <div class="restaurant-details">
-            <p class="address">
+  <!-- Lista restauracji -->
+  <div *ngFor="let restaurant of restaurant" class="restaurant-wrapper mb-6">
+    <!-- Karta restauracji -->
+    <div class="card p-4 shadow-3 border-round-lg">
+      <div class="flex flex-column md:flex-row justify-content-between align-items-start gap-4">
+
+        <!-- Informacje -->
+        <div class="flex-1">
+          <h3 class="mt-0 mb-3 text-primary">{{ restaurant.nazwa }}</h3>
+          <div class="flex flex-column gap-2 text-700">
+            <p class="m-0 flex align-items-center gap-2">
               <i class="pi pi-map-marker"></i>
-              {{ restaurant.adres }}
+              <span>{{ restaurant.adres }}</span>
             </p>
-
-            <p class="phone" *ngIf="restaurant.nr_kontaktowy">
+            <p class="m-0 flex align-items-center gap-2" *ngIf="restaurant.nr_kontaktowy">
               <i class="pi pi-phone"></i>
-              {{ restaurant.nr_kontaktowy }}
+              <span>{{ restaurant.nr_kontaktowy }}</span>
             </p>
-
-            <p class="email" *ngIf="restaurant.email">
+            <p class="m-0 flex align-items-center gap-2" *ngIf="restaurant.email">
               <i class="pi pi-envelope"></i>
-              {{ restaurant.email }}
+              <span>{{ restaurant.email }}</span>
             </p>
-
-            <!-- Zdjęcie jeśli istnieje -->
-            <div class="image" *ngIf="restaurant.zdjecie">
-              <img [src]="restaurant.zdjecie" [alt]="restaurant.nazwa" class="restaurant-image">
-            </div>
           </div>
+        </div>
 
-          <div class="restaurant-actions">
+        <!-- Zdjęcie -->
+        <div *ngIf="restaurant.zdjecie" class="restaurant-photo">
+          <img [src]="restaurant.zdjecie"
+               [alt]="restaurant.nazwa"
+               class="border-round shadow-2"
+               style="width: 180px; height: 180px; object-fit: cover;">
+        </div>
 
-            <button pButton icon="pi pi-pencil" label="Edytuj" class="p-button-sm p-button-warning"
-              (click)="openEditDialog(restaurant)">
-            </button>
-          </div>
+        <!-- Edytuj -->
+        <div>
+          <button pButton
+                  icon="pi pi-pencil"
+                  label="Edytuj dane"
+                  class="p-button-sm p-button-warning"
+                  (click)="openEditDialog(restaurant)">
+          </button>
+        </div>
+
       </div>
-
-      <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }} (Nr kontaktowy: {{ restaurant.nr_kontaktowy
-      }})(email: {{ restaurant.email }})
-
     </div>
-  </ul>
+
+    <!-- Sala z rezerwacją stolików -->
+    <div class="sala-container mt-5 p-4 border-round bg-gray-50">
+      <h4 class="mb-4 text-primary">Rezerwacja stolików – {{ restaurant.nazwa }}</h4>
+      <app-rezerwacja-stolikow [restauracjaId]="restaurant.restauracja_id!"></app-rezerwacja-stolikow>
+    </div>
+  </div>
+
+  <!-- Komunikat gdy nie ma restauracji -->
+  <div *ngIf="!restaurant || restaurant.length === 0" class="text-center py-8">
+    <i class="pi pi-info-circle text-5xl text-500 mb-4"></i>
+    <p class="text-700 text-xl">Nie masz jeszcze żadnej restauracji. Dodaj pierwszą!</p>
+  </div>
 </div>
 
-<!-- Dialog dodawania restauracji, którego widocznosć jest zależna od zmiennej addingDialog -->
-<p-dialog [(visible)]="addingDialog" [header]="'Dodawanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
+<!-- DIALOG: Dodawanie nowej restauracji -->
+<p-dialog [(visible)]="addingDialog"
+          header="Dodaj nową restaurację"
+          [modal]="true"
+          [style]="{ width: '500px' }"
+          [closable]="true">
   <ng-template pTemplate="content">
-    <div class="field">
-
-      <div class="field">
-        <h4>Dane restauracji</h4>
-        <div class="field">
-          <label for="name">Nazwa</label>
-          <input type="text" pInputText id="name" [(ngModel)]="newRestaurant.nazwa" name="name" />
-          <!-- ngModel odpowiada za dwukierunkowe wiązanie danych między modelem a widokiem tak, że w momencie wpisania nazwy restauracji w pole input, wartość ta jest automatycznie przypisywana do właściwości newRestaurant.name w komponencie Angular. -->
-        </div>
-        <div class="field">
-          <label>adres</label>
-          <input type="text" pInputText [(ngModel)]="newRestaurant.adres" name="address" />
-        </div>
-        <div class="field">
-          <label>nr kontaktowy</label>
-          <input type="number" pInputNumber [(ngModel)]="newRestaurant.nr_kontaktowy" name="kontaktowy" />
-        </div>
-        <div class="field">
-          <label>email</label>
-          <input type="text" pInputText [(ngModel)]="newRestaurant.email" name="email" />
-        </div>
+    <div class="grid p-fluid">
+      <div class="field col-12">
+        <label>Nazwa restauracji</label>
+        <input pInputText [(ngModel)]="newRestaurant.nazwa" placeholder="np. Smaki Italii" />
       </div>
-    </div>
-  </ng-template>
-  <ng-template pTemplate="footer">
-    <button pButton label="Anuluj" (click)="addingDialog = false"></button>
-    <button pButton label="Zapisz" (click)="saveRestaurant()"></button>
-  </ng-template>
-</p-dialog>
-
-<p-dialog [(visible)]="editingDialog" [header]="'Edytowanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
-  <ng-template pTemplate="content">
-    <div class="field">
-      <h4>Edytuj dane restauracji</h4>
-
-      <div class="field">
-        <label>Nazwa</label>
-        <input type="text" pInputText [(ngModel)]="editedRestaurant.nazwa" />
-      </div>
-
-      <div class="field">
+      <div class="field col-12">
         <label>Adres</label>
-        <input type="text" pInputText [(ngModel)]="editedRestaurant.adres" />
+        <input pInputText [(ngModel)]="newRestaurant.adres" />
       </div>
-
-      <div class="field">
-        <label>Nr kontaktowy</label>
-        <input type="number" pInputNumber [(ngModel)]="editedRestaurant.nr_kontaktowy" />
+      <div class="field col-12">
+        <label>Numer kontaktowy</label>
+        <input pInputText [(ngModel)]="newRestaurant.nr_kontaktowy" />
       </div>
-
-      <div class="field">
+      <div class="field col-12">
         <label>Email</label>
-        <input type="text" pInputText [(ngModel)]="editedRestaurant.email" />
+        <input pInputText [(ngModel)]="newRestaurant.email" type="email" />
       </div>
     </div>
   </ng-template>
 
   <ng-template pTemplate="footer">
-    <button pButton label="Anuluj" (click)="editingDialog = false"></button>
-    <button pButton label="Zapisz" (click)="updateRestaurant()"></button>
+    <button pButton label="Anuluj" class="p-button-text" (click)="addingDialog = false"></button>
+    <button pButton label="Zapisz restaurację" class="p-button-success" (click)="saveRestaurant()"></button>
   </ng-template>
 </p-dialog>
+
+<!-- DIALOG: Edycja restauracji -->
+<p-dialog [(visible)]="editingDialog"
+          header="Edytuj restaurację"
+          [modal]="true"
+          [style]="{ width: '500px' }">
+  <ng-template pTemplate="content">
+    <div class="grid p-fluid">
+      <div class="field col-12">
+        <label>Nazwa</label>
+        <input pInputText [(ngModel)]="editedRestaurant.nazwa" />
+      </div>
+      <div class="field col-12">
+        <label>Adres</label>
+        <input pInputText [(ngModel)]="editedRestaurant.adres" />
+      </div>
+      <div class="field col-12">
+        <label>Nr kontaktowy</label>
+        <input pInputText [(ngModel)]="editedRestaurant.nr_kontaktowy" />
+      </div>
+      <div class="field col-12">
+        <label>Email</label>
+        <input pInputText [(ngModel)]="editedRestaurant.email" />
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Anuluj" class="p-button-text" (click)="editingDialog = false"></button>
+    <button pButton label="Zapisz zmiany" class="p-button-success" (click)="updateRestaurant()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Kreator układu stolików -->
+<app-stolik-kreator 
+  *ngIf="nowaRestauracjaId"
+  [restauracjaId]="nowaRestauracjaId"
+  [(visible)]="stolikKreatorVisible"
+  (zapisano)="getRestaurant()">
+</app-stolik-kreator>
