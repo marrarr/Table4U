@@ -1,3 +1,4 @@
+// src/app/home/home.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -5,18 +6,32 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { HttpClientModule } from '@angular/common/http';
-import { RestauracjaService } from './restauracja.service'; 
-import { Restauracja } from '../models/restauracja.model'; 
+
+import { RestauracjaService } from '../restauracja/restauracja.service';
+import { Restauracja } from '../models/restauracja.model';
+import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
+import { HttpClient } from '@angular/common/http';
+
+interface CreateRezerwacjaDto {
+  restauracja_id: number;
+  data: string;
+  godzina: string;
+  stoliki: number[];
+  liczba_osob: number;
+  imie: string;
+  telefon: string;
+}
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
-    CommonModule, 
-    ButtonModule, 
-    ProgressSpinnerModule, 
+    CommonModule,
+    ButtonModule,
+    ProgressSpinnerModule,
     ToastModule,
-    HttpClientModule
+    HttpClientModule,
+    ReservationDialogComponent
   ],
   providers: [MessageService, RestauracjaService],
   templateUrl: './home.component.html',
@@ -24,11 +39,17 @@ import { Restauracja } from '../models/restauracja.model';
 })
 export class HomeComponent implements OnInit {
   restauracje: Restauracja[] = [];
-  loading: boolean = false;
+  loading = false;
+  reservationDialogVisible = false;
+  selectedRestaurant: Restauracja | null = null;
+
+  // Cache zajętych stolików: klucz = restauracja_id, wartość = Set<tableId>
+  private occupiedTables = new Map<number, Set<number>>();
 
   constructor(
     private restauracjaService: RestauracjaService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -37,36 +58,100 @@ export class HomeComponent implements OnInit {
 
   loadRestauracje(): void {
     this.loading = true;
-    this.restauracjaService.getRestauracje().subscribe({
-      next: (restauracje: Restauracja[]) => {
-        this.restauracje = restauracje;
+    this.restauracjaService.getAllRestaurants()
+      .then(data => {
+        this.restauracje = data;
         this.loading = false;
-      },
-      error: (error: any) => {
-        console.error('Błąd podczas ładowania restauracji:', error);
+      })
+      .catch(err => {
+        console.error('Błąd ładowania restauracji:', err);
         this.messageService.add({
           severity: 'error',
           summary: 'Błąd',
           detail: 'Nie udało się załadować listy restauracji'
         });
         this.loading = false;
-      }
-    });
+      });
   }
 
-  showDetails(restauracja: Restauracja): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Szczegóły restauracji',
-      detail: `Wyświetlanie szczegółów: ${restauracja.nazwa}`
-    });
+  openReservationDialog(restauracja: Restauracja) {
+    this.selectedRestaurant = restauracja;
+
+    // Przekaż tylko stoliki zajęte w tej konkretnej restauracji
+    const occupiedInThisRestaurant = this.occupiedTables.get(restauracja.restauracja_id!) || new Set<number>();
+    (ReservationDialogComponent as any).permanentlyOccupied = Array.from(occupiedInThisRestaurant);
+
+    this.reservationDialogVisible = true;
   }
 
-  makeReservation(restauracja: Restauracja): void {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Rezerwacja',
-      detail: `Rozpoczynanie rezerwacji w: ${restauracja.nazwa}`
-    });
+  async onReservationConfirmed(selectedTables: Table[]) {
+    if (!this.selectedRestaurant || selectedTables.length === 0) {
+      this.reservationDialogVisible = false;
+      return;
+    }
+
+    const restauracjaId = this.selectedRestaurant.restauracja_id!;
+    const tableIds = selectedTables.map(t => t.id);
+    const totalSeats = selectedTables.reduce((s, t) => s + t.seats, 0);
+
+    // Zbieranie danych
+    const imie = prompt("Twoje imię i nazwisko:", "Jan Kowalski")?.trim();
+    if (!imie) {
+      this.messageService.add({ severity: 'warn', summary: 'Anulowano', detail: 'Podaj imię' });
+      return;
+    }
+
+    const telefon = prompt("Numer telefonu:", "600 123 456")?.trim();
+    if (!telefon) {
+      this.messageService.add({ severity: 'warn', summary: 'Anulowano', detail: 'Podaj telefon' });
+      return;
+    }
+
+    const data = prompt("Data rezerwacji (YYYY-MM-DD):", new Date().toISOString().slice(0, 10))?.trim();
+    if (!data) return;
+
+    const godzina = prompt("Godzina (HH:MM):", "19:00")?.trim();
+    if (!godzina) return;
+
+    const payload: CreateRezerwacjaDto = {
+      restauracja_id: restauracjaId,
+      data,
+      godzina,
+      stoliki: tableIds,
+      liczba_osob: totalSeats,
+      imie,
+      telefon
+    };
+
+    try {
+      // Wysyłamy do backendu
+      await this.http.post('http://localhost:3000/rezerwacja', payload).toPromise();
+
+      // TYLKO JEŚLI backend potwierdzi → blokujemy stoliki lokalnie
+      const set = this.occupiedTables.get(restauracjaId) || new Set<number>();
+      tableIds.forEach(id => set.add(id));
+      this.occupiedTables.set(restauracjaId, set);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Rezerwacja przyjęta!',
+        detail: `Zarezerwowano ${selectedTables.length} stolik(ów) na ${data} ${godzina} dla ${imie}`
+      });
+
+    } catch (error: any) {
+      console.error('Błąd rezerwacji:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Błąd rezerwacji',
+        detail: error.error?.message || 'Nie udało się zapisać rezerwacji. Stoliki nie zostały zablokowane.'
+      });
+
+      // Backend zwrócił błąd → NIE blokujemy stolików!
+      // Użytkownik może spróbować jeszcze raz
+      return;
+    }
+
+    // Zamknij dialog tylko po sukcesie
+    this.reservationDialogVisible = false;
   }
 }

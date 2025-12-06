@@ -1,0 +1,90 @@
+<p-dialog 
+  [(visible)]="visible" 
+  [modal]="true" 
+  [style]="{ width: '95vw', height: '95vh', maxWidth: '1400px' }" 
+  [header]="'Rezerwacja stolików – ' + restaurantName"
+  (onHide)="close()">
+
+  <div class="reservation-container">
+    <!-- Główna sala -->
+    <div class="restaurant-hall">
+      <!-- BAR po prawej stronie -->
+      <div class="bar-area">
+        <div class="bar-counter"></div>
+        <div class="bar-stools">
+          <div class="bar-stool" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+        </div>
+        <div class="bar-label">BAR</div>
+      </div>
+
+      <!-- Stoliki -->
+      <div class="table-wrapper"
+     *ngFor="let table of tables"
+     [style.top.px]="table.top"
+     [style.left.px]="table.left"
+     [class.reserved]="table.reserved"
+     (click)="openTableDialog(table)"
+     [class.selectable]="!table.reserved">
+
+  <!-- Krzesełka – rysowane PRZED blatem (żeby były pod spodem) -->
+  <div class="chair-seat"
+       *ngFor="let i of [].constructor(table.seats); let idx = index"
+       [style.transform]="getChairTransform(table.seats, idx)">
+  </div>
+
+  <!-- Blat stolika – na wierzchu -->
+  <div class="table-top"
+       [class.round]="table.seats <= 4"
+       [class.rect]="table.seats > 4">
+    <span class="table-number">{{ table.id }}</span>
+  </div>
+
+  <!-- Etykieta z liczbą miejsc -->
+  <div class="table-info">
+    {{ table.seats }} os.
+  </div>
+</div>
+    </div>
+
+    <!-- Panel po prawej – podsumowanie -->
+    <div class="summary-sidebar">
+      <h3>Twoja rezerwacja</h3>
+      <div class="summary-info">
+        <p><strong>Wybrano stolików:</strong> {{ selectedTables.length }}</p>
+        <p><strong>Razem miejsc:</strong> {{ getTotalSeats() }}</p>
+      </div>
+
+      <div class="selected-tables-list" *ngIf="selectedTables.length > 0">
+        <div class="selected-table-item" *ngFor="let t of selectedTables">
+          <span>Stolik {{ t.id }} – {{ t.seats }} os.</span>
+          <button pButton icon="pi pi-times" class="p-button-text p-button-danger" (click)="removeTable(t)"></button>
+        </div>
+      </div>
+
+      <div class="summary-actions">
+        <button pButton label="Anuluj" class="p-button-outlined" (click)="close()"></button>
+        <button pButton 
+                label="Zatwierdź rezerwację" 
+                class="p-button-success" 
+                [disabled]="selectedTables.length === 0"
+                (click)="confirmReservation()">
+        </button>
+      </div>
+    </div>
+  </div>
+</p-dialog>
+
+<!-- Mały dialog potwierdzenia stolika -->
+<p-dialog [(visible)]="showTableDialog" header="Dodaj stolik" [modal]="true" [style]="{width: '340px'}">
+  <div class="p-d-flex p-flex-column p-ai-center p-jc-center" style="gap: 16px; padding: 20px 0;">
+    <i class="pi pi-table" style="font-size: 3rem; color: var(--primary-color)"></i>
+    <p *ngIf="currentTable" class="p-text-center">
+      <strong>Stolik nr {{ currentTable.id }}</strong><br>
+      Liczba miejsc: <strong>{{ currentTable.seats }}</strong>
+    </p>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Anuluj" class="p-button-text" (click)="showTableDialog = false"></button>
+    <button pButton label="Dodaj do rezerwacji" class="p-button-success" (click)="addTable()"></button>
+  </ng-template>
+</p-dialog>

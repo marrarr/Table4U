@@ -1,58 +1,63 @@
 <div class="home-container">
   <h1>Lista Restauracji</h1>
-  
+
   <div class="restaurants-list">
     <div *ngFor="let restauracja of restauracje" class="restaurant-card">
       <div class="restaurant-header">
         <h3>{{ restauracja.nazwa }}</h3>
       </div>
-      
+
       <div class="restaurant-details">
         <p class="address">
           <i class="pi pi-map-marker"></i>
           {{ restauracja.adres }}
         </p>
-        
+
         <p class="phone" *ngIf="restauracja.nr_kontaktowy">
           <i class="pi pi-phone"></i>
           {{ restauracja.nr_kontaktowy }}
         </p>
-        
+
         <p class="email" *ngIf="restauracja.email">
           <i class="pi pi-envelope"></i>
           {{ restauracja.email }}
         </p>
 
-        <!-- Zdjęcie jeśli istnieje -->
         <div class="image" *ngIf="restauracja.zdjecie">
           <img [src]="restauracja.zdjecie" [alt]="restauracja.nazwa" class="restaurant-image">
         </div>
       </div>
-      
+
       <div class="restaurant-actions">
-        
-        <button pButton 
-                icon="pi pi-book" 
-                label="Rezerwuj" 
+        <button pButton
+                icon="pi pi-book"
+                label="Rezerwuj"
                 class="p-button-success"
-                (click)="makeReservation(restauracja)">
+                (click)="openReservationDialog(restauracja)">
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Loading spinner -->
+  <!-- Loading i empty state -->
   <div *ngIf="loading" class="loading">
     <p-progressSpinner></p-progressSpinner>
     <p>Ładowanie restauracji...</p>
   </div>
 
-  <!-- Empty state -->
   <div *ngIf="!loading && restauracje.length === 0" class="empty-state">
     <i class="pi pi-inbox" style="font-size: 3rem"></i>
     <h3>Brak restauracji</h3>
     <p>Nie znaleziono żadnych restauracji w systemie.</p>
   </div>
 </div>
+
+<!-- DIALOG REZERWACJI – MUSI BYĆ TUTAJ, NA KOŃCU PLIKU, POZA WSZYSTKIMI DIVAMI -->
+<app-reservation-dialog 
+  [visible]="reservationDialogVisible"
+  [restaurantName]="selectedRestaurant?.nazwa || ''"
+  (visibleChange)="reservationDialogVisible = $event"
+  (confirm)="onReservationConfirmed($event)">
+</app-reservation-dialog>
 
 <p-toast></p-toast>
