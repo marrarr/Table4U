@@ -1,14 +1,20 @@
 // src/data-source.ts
 import 'reflect-metadata';
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { DataSource } from 'typeorm';
 import * as path from 'path';
 import { config } from 'dotenv';
 
-config({ path: path.resolve(__dirname, '../.env') });
+const isProd = process.env.NODE_ENV === 'production';
+
+// config({ path: path.resolve(__dirname, '../.env') });
+
+if (!isProd) {
+  config({ path: path.resolve(process.cwd(), '../.env')})
+}
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
-  host: process.env.DATABASE_HOST || '127.0.0.1',
+  host: process.env.DATABASE_HOST || (isProd ? 'db' : '127.0.0.1'),
   port: Number(process.env.DATABASE_PORT) || 3306,
   username: process.env.DATABASE_USER || 'root',
   password: process.env.DATABASE_PASSWORD || '',
