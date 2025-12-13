@@ -1,4 +1,3 @@
-// src/app/reservation/reservation-dialog.component.ts
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,13 +8,16 @@ import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 
+// Angular CDK
+import { DragDropModule, CdkDragEnd } from '@angular/cdk/drag-drop';
+
 export interface Table {
   id: number;
   seats: number;
   top: number;
   left: number;
-  reserved: boolean; // Czy stolik jest zajęty przez kogoś innego (dane z backendu)
-  permanentlyReserved?: boolean; // Flaga pomocnicza do blokowania interakcji
+  reserved: boolean;
+  permanentlyReserved?: boolean;
 }
 
 @Component({
@@ -27,7 +29,8 @@ export interface Table {
     ButtonModule, 
     FormsModule, 
     DatePickerModule,
-    InputTextModule 
+    InputTextModule,
+    DragDropModule 
   ],
   templateUrl: './reservation-dialog.component.html',
   styleUrls: ['./reservation-dialog.component.scss']
@@ -35,8 +38,10 @@ export interface Table {
 export class ReservationDialogComponent implements OnInit {
   @Input() visible: boolean = false;
   @Input() restaurantName: string = '';
+  @Input() isEditable: boolean = false; // Tryb edycji dla właściciela
 
   @Output() visibleChange = new EventEmitter<boolean>();
+  @Output() layoutSaved = new EventEmitter<Table[]>();
   @Output() confirm = new EventEmitter<{
     tables: { id: number; seats: number }[];
     form: {
@@ -47,7 +52,6 @@ export class ReservationDialogComponent implements OnInit {
     }
   }>();
 
-  // Symulacja zajętych stolików (np. z backendu)
   private static permanentlyOccupied: number[] = [];
 
   tables: Table[] = [
@@ -73,7 +77,6 @@ export class ReservationDialogComponent implements OnInit {
   ngOnInit(): void {
     const occupied = ReservationDialogComponent.permanentlyOccupied || [];
     this.tables.forEach(table => {
-      // Jeśli stolik jest zajęty "z góry", oznaczamy go jako trwale zajęty
       if (occupied.includes(table.id)) {
         table.reserved = true;
         table.permanentlyReserved = true;
@@ -82,49 +85,76 @@ export class ReservationDialogComponent implements OnInit {
         table.permanentlyReserved = false;
       }
     });
-    // Czyścimy statyczną tablicę po inicjalizacji (opcjonalne, zależnie od logiki aplikacji)
     ReservationDialogComponent.permanentlyOccupied = [];
   }
 
-  // --- LOGIKA WYBORU STOLIKA (Bez wyskakującego okna) ---
+  // --- LOGIKA DRAG & DROP (POPRAWIONA) ---
 
-  /**
-   * Sprawdza, czy stolik znajduje się na liście wybranych przez użytkownika.
-   * Używane do nadawania klasy .table-selected w HTML.
-   */
+  onDragEnded(event: CdkDragEnd, table: Table) {
+    if (!this.isEditable) return;
+
+    // Pobieramy element DOM stolika i jego rodzica (salę)
+    const element = event.source.element.nativeElement;
+    const parent = element.parentElement;
+
+    if (!parent) return;
+
+    // 1. Pobieramy dokładną pozycję stolika na ekranie (gdzie go upuściłeś)
+    const elementRect = element.getBoundingClientRect();
+    
+    // 2. Pobieramy pozycję rodzica na ekranie
+    const parentRect = parent.getBoundingClientRect();
+
+    // 3. Obliczamy grubość ramki (border) rodzica, 
+    //    ponieważ pozycjonowanie 'absolute' jest względem wnętrza (padding-box),
+    //    a getBoundingClientRect uwzględnia ramki.
+    const borderLeft = parent.clientLeft || 0;
+    const borderTop = parent.clientTop || 0;
+
+    // 4. Obliczamy nową pozycję:
+    //    Pozycja Elementu - Pozycja Rodzica - Ramka Rodzica + Scroll Rodzica
+    const newLeft = elementRect.left - parentRect.left - borderLeft + parent.scrollLeft;
+    const newTop = elementRect.top - parentRect.top - borderTop + parent.scrollTop;
+
+    // 5. Aktualizujemy model
+    table.left = newLeft;
+    table.top = newTop;
+
+    // 6. Resetujemy transformację CDK. 
+    //    Stolik zostanie w miejscu, które właśnie obliczyliśmy i przypisaliśmy do [style.top/left].
+    event.source.reset();
+  }
+
+  saveLayout() {
+    this.layoutSaved.emit(this.tables);
+    this.close();
+  }
+
+  // --- LOGIKA WYBORU STOLIKA (KLIENT) ---
+
   isTableSelected(table: Table): boolean {
     return this.selectedTables.some(t => t.id === table.id);
   }
 
-  /**
-   * Główna metoda obsługi kliknięcia w stolik.
-   * Dodaje lub usuwa stolik z listy wyboru.
-   */
   toggleTableSelection(table: Table) {
-    // 1. Jeśli stolik jest trwale zajęty (szary), nie pozwól na wybór
-    if (table.permanentlyReserved) {
+    if (this.isEditable || table.permanentlyReserved) {
       return;
     }
 
     const index = this.selectedTables.findIndex(t => t.id === table.id);
 
     if (index > -1) {
-      // Jeśli już jest wybrany -> usuń (odznacz)
       this.selectedTables.splice(index, 1);
     } else {
-      // Jeśli nie jest wybrany -> dodaj do listy
       this.selectedTables.push(table);
     }
   }
 
-  /**
-   * Usuwa stolik z listy wybranych (np. przez przycisk 'X' w formularzu).
-   */
   removeTable(table: Table) {
     this.selectedTables = this.selectedTables.filter(t => t.id !== table.id);
   }
 
-  // --- LOGIKA FORMULARZA I ZAMYKANIA ---
+  // --- LOGIKA FORMULARZA ---
 
   close() {
     this.visible = false;
@@ -134,8 +164,7 @@ export class ReservationDialogComponent implements OnInit {
 
   private resetForm() {
     this.selectedTables = [];
-    // Opcjonalnie reset danych formularza, jeśli chcesz:
-    // this.formData = { imie: '', telefon: '', data: new Date(), godzina: new Date() };
+    this.formData = { imie: '', telefon: '', data: new Date(), godzina: new Date() };
   }
 
   confirmReservationWithForm() {
@@ -148,7 +177,6 @@ export class ReservationDialogComponent implements OnInit {
       seats: t.seats
     }));
 
-    // Emitujemy wybrane stoliki + dane z formularza
     this.confirm.emit({
       tables: confirmedTables,
       form: this.formData
@@ -170,8 +198,6 @@ export class ReservationDialogComponent implements OnInit {
   getTotalSeats(): number {
     return this.selectedTables.reduce((sum, t) => sum + t.seats, 0);
   }
-
-  // --- LOGIKA WIZUALNA (Krzesła) ---
 
   getChairTransform(seats: number, index: number): string {
     const angle = (index * 360) / seats;

@@ -5,14 +5,11 @@
   <h2>Lista restauracji:</h2>
   <div>
 
-    <!-- Wywołanie metody szukającej restauracji -->
     <button pButton icon="pi pi-search" label="Szukaj restauracji" (click)="getRestaurant()">
     </button>
 
-    <!-- Zmiana zmiennej addingDialog na true powoduje otwarcie dialogu dodawania restauracji -->
-    <button pButton icon="pi pi-search" label="Dodaj restauracje" (click)="addingDialog = true">
+    <button pButton icon="pi pi-plus" label="Dodaj restauracje" (click)="addingDialog = true">
     </button>
-
 
   </div>
   <ul>
@@ -39,51 +36,42 @@
               {{ restaurant.email }}
             </p>
 
-            <!-- Zdjęcie jeśli istnieje -->
             <div class="image" *ngIf="restaurant.zdjecie">
               <img [src]="restaurant.zdjecie" [alt]="restaurant.nazwa" class="restaurant-image">
             </div>
           </div>
 
           <div class="restaurant-actions">
-
             <button pButton icon="pi pi-pencil" label="Edytuj" class="p-button-sm p-button-warning"
               (click)="openEditDialog(restaurant)">
             </button>
           </div>
       </div>
 
-      <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }} (Nr kontaktowy: {{ restaurant.nr_kontaktowy
-      }})(email: {{ restaurant.email }})
-
+      <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }}
     </div>
   </ul>
 </div>
 
-<!-- Dialog dodawania restauracji, którego widocznosć jest zależna od zmiennej addingDialog -->
 <p-dialog [(visible)]="addingDialog" [header]="'Dodawanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
   <ng-template pTemplate="content">
     <div class="field">
-
+      <h4>Dane restauracji</h4>
       <div class="field">
-        <h4>Dane restauracji</h4>
-        <div class="field">
-          <label for="name">Nazwa</label>
-          <input type="text" pInputText id="name" [(ngModel)]="newRestaurant.nazwa" name="name" />
-          <!-- ngModel odpowiada za dwukierunkowe wiązanie danych między modelem a widokiem tak, że w momencie wpisania nazwy restauracji w pole input, wartość ta jest automatycznie przypisywana do właściwości newRestaurant.name w komponencie Angular. -->
-        </div>
-        <div class="field">
-          <label>adres</label>
-          <input type="text" pInputText [(ngModel)]="newRestaurant.adres" name="address" />
-        </div>
-        <div class="field">
-          <label>nr kontaktowy</label>
-          <input type="number" pInputNumber [(ngModel)]="newRestaurant.nr_kontaktowy" name="kontaktowy" />
-        </div>
-        <div class="field">
-          <label>email</label>
-          <input type="text" pInputText [(ngModel)]="newRestaurant.email" name="email" />
-        </div>
+        <label for="name">Nazwa</label>
+        <input type="text" pInputText id="name" [(ngModel)]="newRestaurant.nazwa" name="name" />
+      </div>
+      <div class="field">
+        <label>Adres</label>
+        <input type="text" pInputText [(ngModel)]="newRestaurant.adres" name="address" />
+      </div>
+      <div class="field">
+        <label>Nr kontaktowy</label>
+        <input type="number" pInputNumber [(ngModel)]="newRestaurant.nr_kontaktowy" name="kontaktowy" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="text" pInputText [(ngModel)]="newRestaurant.email" name="email" />
       </div>
     </div>
   </ng-template>
@@ -125,3 +113,10 @@
     <button pButton label="Zapisz" (click)="updateRestaurant()"></button>
   </ng-template>
 </p-dialog>
+
+<app-reservation-dialog
+  [(visible)]="floorPlanDialogVisible"
+  [restaurantName]="currentRestaurantForLayout?.nazwa || ''"
+  [isEditable]="true"
+  (layoutSaved)="onLayoutSaved($event)">
+</app-reservation-dialog>
