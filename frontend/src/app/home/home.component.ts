@@ -1,16 +1,14 @@
-// src/app/home/home.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 import { RestauracjaService } from '../restauracja/restauracja.service';
 import { Restauracja } from '../models/restauracja.model';
 import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
-import { HttpClient } from '@angular/common/http';
 
 interface CreateRezerwacjaDto {
   restauracja_id: number;
@@ -43,7 +41,6 @@ export class HomeComponent implements OnInit {
   reservationDialogVisible = false;
   selectedRestaurant: Restauracja | null = null;
 
-  // Cache zajętych stolików: klucz = restauracja_id, wartość = Set<tableId>
   private occupiedTables = new Map<number, Set<number>>();
 
   constructor(
@@ -77,9 +74,11 @@ export class HomeComponent implements OnInit {
   openReservationDialog(restauracja: Restauracja) {
     this.selectedRestaurant = restauracja;
 
-    // Przekaż trwale zajęte stoliki dla tej restauracji
-    const occupiedInThisRestaurant = this.occupiedTables.get(restauracja.restauracja_id!) || new Set<number>();
-    (ReservationDialogComponent as any).permanentlyOccupied = Array.from(occupiedInThisRestaurant);
+    const occupiedInThisRestaurant =
+      this.occupiedTables.get(restauracja.restauracja_id!) || new Set<number>();
+
+    (ReservationDialogComponent as any).permanentlyOccupied =
+      Array.from(occupiedInThisRestaurant);
 
     this.reservationDialogVisible = true;
   }
@@ -103,6 +102,17 @@ export class HomeComponent implements OnInit {
     const tableIds = selectedTables.map(t => t.id);
     const totalSeats = selectedTables.reduce((s, t) => s + t.seats, 0);
 
+    const imie = prompt("Twoje imię i nazwisko:", "Jan Kowalski")?.trim();
+    if (!imie) return;
+
+    const telefon = prompt("Numer telefonu:", "600 123 456")?.trim();
+    if (!telefon) return;
+
+    const data = prompt("Data rezerwacji (YYYY-MM-DD):", new Date().toISOString().slice(0, 10))?.trim();
+    if (!data) return;
+
+    const godzina = prompt("Godzina (HH:MM):", "19:00")?.trim();
+    if (!godzina) return;
     // Formatowanie daty i godziny do formatu oczekiwanego przez backend
     const dataStr = form.data.toISOString().slice(0, 10); // YYYY-MM-DD
     const godzinaStr = form.godzina.toTimeString().slice(0, 5); // HH:MM
@@ -149,4 +159,10 @@ export class HomeComponent implements OnInit {
     this.reservationDialogVisible = false;
     this.selectedRestaurant = null;
   }
+
+  getMainImage(restauracja: Restauracja) {
+    if (!restauracja.obrazy) return null;
+    return restauracja.obrazy.find(o => o.czy_glowne) || null;
+  }
+
 }

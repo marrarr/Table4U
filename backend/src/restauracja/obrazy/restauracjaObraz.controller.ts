@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { restauracjaObraz } from './restauracjaObraz.entity';
+import { RestauracjaObraz } from './restauracjaObraz.entity';
 import { RestauracjaObrazService } from './restauracjaObraz.service';
 
 @Controller('restauracja/:restauracjaId/obraz')
@@ -34,7 +34,7 @@ export class RestauracjaObrazController {
       }),
     )
     file: Express.Multer.File,
-  ): Promise<restauracjaObraz> {
+  ): Promise<RestauracjaObraz> {
     return this.obrazService.dodajObraz(+restauracjaId, file);
   }
 
@@ -51,7 +51,7 @@ export class RestauracjaObrazController {
       }),
     )
     file: Express.Multer.File,
-  ): Promise<restauracjaObraz> {
+  ): Promise<RestauracjaObraz> {
     return this.obrazService.zaktualizujObraz(+obrazId, file);
   }
 

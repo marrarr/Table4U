@@ -1,12 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, ManyToOne } from 'typeorm';
-import { Rezerwacja } from '../../rezerwacja/rezerwacja.entity';
-import { Uzytkownik } from 'src/uzytkownik/uzytkownik.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  Index,
+} from 'typeorm';
 import { Restauracja } from '../restauracja.entity';
 
 @Entity('restauracja_obraz')
-export class restauracjaObraz {
+@Index(  // indeks w bazie, który dba o to, żeby restauracja miała tylko jedno główne zdjęcie
+  ['restauracja', 'czy_glowne'],
+  { unique: true, where: 'czy_glowne = true' }
+)
+export class RestauracjaObraz {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({
+      default: false,
+    })
+    czy_glowne: boolean;
 
     @Column({
         type: 'longblob',

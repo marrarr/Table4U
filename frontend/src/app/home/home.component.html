@@ -23,12 +23,17 @@
           {{ restauracja.email }}
         </p>
 
-        <div class="image" *ngIf="restauracja.zdjecie">
-          <img [src]="restauracja.zdjecie" [alt]="restauracja.nazwa" class="restaurant-image">
+        <!-- Główne zdjęcie restauracji -->
+        <div class="image" *ngIf="getMainImage(restauracja) as img">
+          <img
+            [src]="'data:' + img.typ + ';base64,' + img.obrazBase64"
+            [alt]="restauracja.nazwa"
+            class="restaurant-image"
+          >
         </div>
-      </div>
 
-      <div class="restaurant-actions">
+
+        <div class="restaurant-actions">
         <button pButton
                 icon="pi pi-book"
                 label="Rezerwuj"
@@ -53,7 +58,7 @@
 </div>
 
 <!-- DIALOG REZERWACJI – MUSI BYĆ TUTAJ, NA KOŃCU PLIKU, POZA WSZYSTKIMI DIVAMI -->
-<app-reservation-dialog 
+<app-reservation-dialog
   [visible]="reservationDialogVisible"
   [restaurantName]="selectedRestaurant?.nazwa || ''"
   (visibleChange)="reservationDialogVisible = $event"
