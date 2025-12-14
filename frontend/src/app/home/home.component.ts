@@ -12,8 +12,8 @@ import { ReservationDialogComponent, Table } from '../reservation/reservation-di
 
 interface CreateRezerwacjaDto {
   restauracja_id: number;
-  data: string;
-  godzina: string;
+  data: string;          // YYYY-MM-DD
+  godzina: string;       // HH:MM
   stoliki: number[];
   liczba_osob: number;
   imie: string;
@@ -83,7 +83,16 @@ export class HomeComponent implements OnInit {
     this.reservationDialogVisible = true;
   }
 
-  async onReservationConfirmed(selectedTables: Table[]) {
+  // Nowa sygnatura: odbiera obiekt z wybranymi stolikami i danymi z formularza
+  onReservationConfirmed(event: { tables: { id: number; seats: number }[]; 
+  form: { 
+    imie: string; 
+    telefon: string; 
+    data: Date; 
+    godzina: Date;} }) {
+    const selectedTables = event.tables;
+    const form = event.form;
+
     if (!this.selectedRestaurant || selectedTables.length === 0) {
       this.reservationDialogVisible = false;
       return;
@@ -104,41 +113,51 @@ export class HomeComponent implements OnInit {
 
     const godzina = prompt("Godzina (HH:MM):", "19:00")?.trim();
     if (!godzina) return;
+    // Formatowanie daty i godziny do formatu oczekiwanego przez backend
+    const dataStr = form.data.toISOString().slice(0, 10); // YYYY-MM-DD
+    const godzinaStr = form.godzina.toTimeString().slice(0, 5); // HH:MM
 
     const payload: CreateRezerwacjaDto = {
       restauracja_id: restauracjaId,
-      data,
-      godzina,
+      data: dataStr,
+      godzina: godzinaStr,
       stoliki: tableIds,
       liczba_osob: totalSeats,
-      imie,
-      telefon
+      imie: form.imie.trim(),
+      telefon: form.telefon.trim()
     };
 
-    try {
-      await this.http.post('http://localhost:3000/rezerwacja', payload).toPromise();
+    this.http.post('http://localhost:3000/rezerwacja', payload).subscribe({
+      next: () => {
+        // Sukces – blokujemy stoliki lokalnie (na wypadek ponownego otwarcia dialogu)
+        const set = this.occupiedTables.get(restauracjaId) || new Set<number>();
+        tableIds.forEach(id => set.add(id));
+        this.occupiedTables.set(restauracjaId, set);
 
-      const set = this.occupiedTables.get(restauracjaId) || new Set<number>();
-      tableIds.forEach(id => set.add(id));
-      this.occupiedTables.set(restauracjaId, set);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Rezerwacja przyjęta!',
+          detail: `Zarezerwowano ${selectedTables.length} stolik(ów) na ${dataStr} ${godzinaStr} dla ${form.imie}`
+        });
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Rezerwacja przyjęta!',
-        detail: `Zarezerwowano stoliki na ${data} ${godzina}`
-      });
+        this.reservationDialogVisible = false;
+      },
+      error: (error: any) => {
+        console.error('Błąd rezerwacji:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Błąd rezerwacji',
+          detail: error.error?.message || 'Nie udało się zapisać rezerwacji. Spróbuj ponownie.'
+        });
+        // Nie zamykamy dialogu – użytkownik może poprawić dane lub wybrać inne stoliki
+      }
+    });
+  }
 
-    } catch (error: any) {
-      console.error('Błąd rezerwacji:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Błąd rezerwacji',
-        detail: error.error?.message || 'Nie udało się zapisać rezerwacji.'
-      });
-      return;
-    }
-
+  // Metoda do zamknięcia dialogu z zewnątrz (np. przycisk Anuluj w dialogu już to robi)
+  onDialogHide() {
     this.reservationDialogVisible = false;
+    this.selectedRestaurant = null;
   }
 
   getMainImage(restauracja: Restauracja) {

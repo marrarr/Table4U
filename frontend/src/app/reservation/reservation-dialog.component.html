@@ -2,89 +2,204 @@
   [(visible)]="visible" 
   [modal]="true" 
   [style]="{ width: '95vw', height: '95vh', maxWidth: '1400px' }" 
-  [header]="'Rezerwacja stolików – ' + restaurantName"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="custom-reservation-dialog"
   (onHide)="close()">
 
-  <div class="reservation-container">
-    <!-- Główna sala -->
-    <div class="restaurant-hall">
-      <!-- BAR po prawej stronie -->
-      <div class="bar-area">
-        <div class="bar-counter"></div>
-        <div class="bar-stools">
-          <div class="bar-stool" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
-        </div>
-        <div class="bar-label">BAR</div>
+  <ng-template pTemplate="header">
+    <div class="dialog-header-content">
+      <div class="header-icon">
+        <i class="pi pi-building"></i>
       </div>
-
-      <!-- Stoliki -->
-      <div class="table-wrapper"
-     *ngFor="let table of tables"
-     [style.top.px]="table.top"
-     [style.left.px]="table.left"
-     [class.reserved]="table.reserved"
-     (click)="openTableDialog(table)"
-     [class.selectable]="!table.reserved">
-
-  <!-- Krzesełka – rysowane PRZED blatem (żeby były pod spodem) -->
-  <div class="chair-seat"
-       *ngFor="let i of [].constructor(table.seats); let idx = index"
-       [style.transform]="getChairTransform(table.seats, idx)">
-  </div>
-
-  <!-- Blat stolika – na wierzchu -->
-  <div class="table-top"
-       [class.round]="table.seats <= 4"
-       [class.rect]="table.seats > 4">
-    <span class="table-number">{{ table.id }}</span>
-  </div>
-
-  <!-- Etykieta z liczbą miejsc -->
-  <div class="table-info">
-    {{ table.seats }} os.
-  </div>
-</div>
-    </div>
-
-    <!-- Panel po prawej – podsumowanie -->
-    <div class="summary-sidebar">
-      <h3>Twoja rezerwacja</h3>
-      <div class="summary-info">
-        <p><strong>Wybrano stolików:</strong> {{ selectedTables.length }}</p>
-        <p><strong>Razem miejsc:</strong> {{ getTotalSeats() }}</p>
-      </div>
-
-      <div class="selected-tables-list" *ngIf="selectedTables.length > 0">
-        <div class="selected-table-item" *ngFor="let t of selectedTables">
-          <span>Stolik {{ t.id }} – {{ t.seats }} os.</span>
-          <button pButton icon="pi pi-times" class="p-button-text p-button-danger" (click)="removeTable(t)"></button>
-        </div>
-      </div>
-
-      <div class="summary-actions">
-        <button pButton label="Anuluj" class="p-button-outlined" (click)="close()"></button>
-        <button pButton 
-                label="Zatwierdź rezerwację" 
-                class="p-button-success" 
-                [disabled]="selectedTables.length === 0"
-                (click)="confirmReservation()">
-        </button>
+      <div class="header-text">
+        <h2 class="restaurant-name">{{ restaurantName }}</h2>
+        <span class="header-subtitle">
+          {{ isEditable ? 'Edytor układu sali' : 'System rezerwacji stolików' }}
+        </span>
       </div>
     </div>
-  </div>
-</p-dialog>
-
-<!-- Mały dialog potwierdzenia stolika -->
-<p-dialog [(visible)]="showTableDialog" header="Dodaj stolik" [modal]="true" [style]="{width: '340px'}">
-  <div class="p-d-flex p-flex-column p-ai-center p-jc-center" style="gap: 16px; padding: 20px 0;">
-    <i class="pi pi-table" style="font-size: 3rem; color: var(--primary-color)"></i>
-    <p *ngIf="currentTable" class="p-text-center">
-      <strong>Stolik nr {{ currentTable.id }}</strong><br>
-      Liczba miejsc: <strong>{{ currentTable.seats }}</strong>
-    </p>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton label="Anuluj" class="p-button-text" (click)="showTableDialog = false"></button>
-    <button pButton label="Dodaj do rezerwacji" class="p-button-success" (click)="addTable()"></button>
   </ng-template>
+
+  <div class="reservation-container">
+    <div class="main-content">
+      
+      <div class="restaurant-hall">
+        
+        <div class="bar-area">
+          <div class="bar-counter"></div>
+          <div class="bar-stools">
+            <div class="bar-stool" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+          </div>
+          <div class="bar-label">BAR</div>
+        </div>
+
+        <div class="wall-window window-top" style="left: 20px; width: 120px;"></div>
+        <div class="wall-window window-top" style="left: 260px; width: 120px;"></div>
+        <div class="wall-window window-top" style="left: 500px; width: 120px;"></div>
+
+        <div class="wall-window window-left" style="top: 30px; height: 180px;"></div>
+        <div class="wall-window window-left" style="top: 340px; height: 180px;"></div>
+
+        <div class="wall-door door-bottom" style="left: 50%; transform: translateX(-50%);">
+          <div class="door-mat"></div>
+        </div>
+
+        <div class="table-wrapper"
+             *ngFor="let table of tables"
+             cdkDrag
+             [cdkDragBoundary]="'.restaurant-hall'"
+             [cdkDragDisabled]="!isEditable"
+             (cdkDragEnded)="onDragEnded($event, table)"
+             
+             [style.top.px]="table.top"
+             [style.left.px]="table.left"
+             
+             [class.reserved]="table.reserved && !isEditable"
+             [class.permanently-reserved]="table.permanentlyReserved && !isEditable"
+             [class.selectable]="!table.permanentlyReserved && !isEditable"
+             [class.draggable-mode]="isEditable"
+             [class.table-selected]="isTableSelected(table) && !isEditable"
+             
+             (click)="!isEditable ? toggleTableSelection(table) : null">
+
+          <div class="chair-seat"
+               *ngFor="let i of [].constructor(table.seats); let idx = index"
+               [style.transform]="getChairTransform(table.seats, idx)">
+          </div>
+
+          <div class="table-top"
+               [class.round]="table.seats <= 4"
+               [class.rect]="table.seats > 4">
+            <span class="table-number">{{ table.id }}</span>
+          </div>
+
+          <div class="table-info">
+            {{ table.seats }} os.
+          </div>
+        </div>
+      </div>
+
+      <div class="reservation-form-sidebar">
+        
+        <ng-container *ngIf="!isEditable">
+          <div class="sidebar-header">
+            <h3>Dane rezerwacji</h3>
+            <p class="subtitle">Wybierz stolik na mapie i wypełnij dane.</p>
+          </div>
+
+          <div class="form-content">
+            <div class="form-group">
+              <label for="imie">Imię i nazwisko</label>
+              <div class="input-icon-wrapper">
+                <i class="pi pi-user"></i>
+                <input pInputText id="imie" [(ngModel)]="formData.imie" placeholder="np. Jan Kowalski" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="telefon">Telefon</label>
+              <div class="input-icon-wrapper">
+                <i class="pi pi-phone"></i>
+                <input pInputText id="telefon" [(ngModel)]="formData.telefon" placeholder="np. 600 123 456" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group half-width">
+                <label for="data">Data</label>
+                <p-datepicker 
+                  id="data" 
+                  [(ngModel)]="formData.data" 
+                  dateFormat="yy-mm-dd" 
+                  [showIcon]="true" 
+                  placeholder="Data"
+                  styleClass="full-width-calendar"
+                  [inputStyle]="{'width': '100%'}"
+                  appendTo="body">
+                </p-datepicker>
+              </div>
+
+              <div class="form-group half-width">
+                <label for="godzina">Godzina</label>
+                <p-datepicker 
+                  id="godzina" 
+                  [(ngModel)]="formData.godzina" 
+                  [timeOnly]="true" 
+                  hourFormat="24" 
+                  [showIcon]="true" 
+                  placeholder="Godzina"
+                  styleClass="full-width-calendar"
+                  [inputStyle]="{'width': '100%'}"
+                  appendTo="body">
+                </p-datepicker>
+              </div>
+            </div>
+
+            <div class="selected-tables-summary" *ngIf="selectedTables.length > 0">
+              <div class="summary-header">
+                <h4>Wybrane stoliki <span class="badge">{{ selectedTables.length }}</span></h4>
+                <span class="total-seats">Miejsc: <strong>{{ getTotalSeats() }}</strong></span>
+              </div>
+
+              <div class="selected-tables-chips">
+                <div class="table-chip" *ngFor="let t of selectedTables">
+                  <div class="chip-content">
+                    <span class="chip-icon">T{{ t.id }}</span>
+                    <span class="chip-info">{{ t.seats }}os.</span>
+                  </div>
+                  <button class="chip-remove" (click)="removeTable(t)">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button pButton label="Anuluj" class="p-button-text p-button-secondary action-btn-cancel" (click)="close()"></button>
+            <button pButton 
+                    [label]="selectedTables.length === 0 ? 'Wybierz stolik' : 'Zatwierdź'" 
+                    icon="pi pi-check"
+                    class="p-button-success action-btn-confirm"
+                    [disabled]="selectedTables.length === 0 || !isFormValid()"
+                    (click)="confirmReservationWithForm()">
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="isEditable">
+          <div class="sidebar-header">
+            <h3>Edytor układu</h3>
+            <p class="subtitle">Zarządzaj rozmieszczeniem stolików.</p>
+          </div>
+
+          <div class="form-content">
+            <div style="background: #e3f2fd; padding: 16px; border-radius: 12px; border: 1px solid #bbdefb; color: #0d47a1; display: flex; gap: 12px; align-items: start;">
+              <i class="pi pi-info-circle" style="font-size: 1.2rem; margin-top: 2px;"></i> 
+              <div style="font-size: 0.9rem; line-height: 1.4;">
+                <strong>Tryb edycji włączony.</strong><br>
+                Możesz chwycić dowolny stolik i przesunąć go w inne miejsce na sali.
+              </div>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; color: #95a5a6; font-size: 0.9rem;">
+               Kliknij "Zapisz układ", aby zapamiętać nowe pozycje stolików.
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button pButton label="Anuluj" class="p-button-text p-button-secondary action-btn-cancel" (click)="close()"></button>
+            <button pButton 
+                    label="Zapisz układ" 
+                    icon="pi pi-save"
+                    class="p-button-success action-btn-confirm"
+                    (click)="saveLayout()">
+            </button>
+          </div>
+        </ng-container>
+
+      </div> 
+    </div> 
+  </div> 
 </p-dialog>

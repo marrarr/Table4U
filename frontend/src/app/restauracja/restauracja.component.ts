@@ -8,10 +8,21 @@ import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 
+// Importujemy komponent dialogu oraz interfejs Table
+import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ButtonModule, InputTextModule, HttpClientModule, CommonModule, DialogModule, FormsModule],
+  imports: [
+    ButtonModule, 
+    InputTextModule, 
+    HttpClientModule, 
+    CommonModule, 
+    DialogModule, 
+    FormsModule, 
+    ReservationDialogComponent
+  ],
   providers: [RestauracjaService],
   templateUrl: './restauracja.component.html',
   styleUrls: ['./restauracja.component.scss'],
@@ -23,6 +34,10 @@ export class RestauracjaComponent implements OnInit {
   restaurant: Restauracja[] = [];
   addingDialog = false;
   editingDialog = false;
+
+  // Zmienne do obsługi dialogu układu sali (Floor Plan)
+  floorPlanDialogVisible = false;
+  currentRestaurantForLayout: Restauracja | null = null;
 
   newRestaurant: CreateRestauracjaDto = {
     nazwa: '',
@@ -44,25 +59,37 @@ export class RestauracjaComponent implements OnInit {
   }
 
   async getRestaurant() {
-  try {
-    this.restaurant = await this.restauracjaService.getMyRestaurants();
-  } catch (error) {
-    console.error('Błąd podczas pobierania restauracji:', error);
+    try {
+      this.restaurant = await this.restauracjaService.getMyRestaurants();
+    } catch (error) {
+      console.error('Błąd podczas pobierania restauracji:', error);
+    }
   }
-}
 
   async saveRestaurant() {
     if (this.newRestaurant.nazwa && this.newRestaurant.adres && this.newRestaurant.nr_kontaktowy && this.newRestaurant.email) {
       try {
+
         const created = await this.restauracjaService.createRestaurant(this.newRestaurant);
         this.restaurant.push(created);
+        
+        // 2. Resetujemy formularz
         this.newRestaurant = {
           nazwa: '',
           adres: '',
           nr_kontaktowy: '',
           email: '',
         };
+        
+        // 3. Zamykamy okno dodawania
         this.addingDialog = false;
+
+        // 4. === NOWOŚĆ === 
+        // Otwieramy edytor układu sali dla nowo utworzonej restauracji
+        setTimeout(() => {
+          this.openFloorPlanEditor(created);
+        }, 300);
+
       } catch (error) {
         console.error('Błąd przy dodawaniu restauracji:', error);
       }
@@ -77,20 +104,32 @@ export class RestauracjaComponent implements OnInit {
   }
 
   async updateRestaurant() {
-  try {
-    const updated = await this.restauracjaService.updateRestaurant(
-      this.editedRestaurant.restauracja_id!,
-      this.editedRestaurant
-    );
+    try {
+      const updated = await this.restauracjaService.updateRestaurant(
+        this.editedRestaurant.restauracja_id!,
+        this.editedRestaurant
+      );
+      
+      const index = this.restaurant.findIndex(r => r.restauracja_id === updated.restauracja_id);
+      if (index !== -1) this.restaurant[index] = updated;
 
+      this.editingDialog = false;
 
-    const index = this.restaurant.findIndex(r => r.restauracja_id === updated.restauracja_id);
-    if (index !== -1) this.restaurant[index] = updated;
+      // Otwarcie edytora po edycji (to już miałeś)
+      setTimeout(() => {
+        this.openFloorPlanEditor(updated);
+      }, 300);
 
-    this.editingDialog = false;
+    } catch (error) {
+      console.error('Błąd podczas aktualizacji restauracji:', error);
+    }
+  }
 
-  } catch (error) {
-    console.error('Błąd podczas aktualizacji restauracji:', error);
+  // --- Metody do obsługi edytora sali ---
+
+  openFloorPlanEditor(restaurant: Restauracja) {
+    this.currentRestaurantForLayout = restaurant;
+    this.floorPlanDialogVisible = true;
   }
 }
 
@@ -101,3 +140,14 @@ export class RestauracjaComponent implements OnInit {
 
 }
 
+  onLayoutSaved(newTables: Table[]) {
+    console.log('Zapisano nowy układ dla restauracji:', this.currentRestaurantForLayout?.nazwa);
+    console.log('Nowe współrzędne stolików:', newTables);
+
+    // TODO: Wywołaj serwis zapisujący układ w bazie, np.:
+    // this.restauracjaService.saveTableLayout(this.currentRestaurantForLayout.restauracja_id, newTables);
+
+    this.floorPlanDialogVisible = false;
+    this.currentRestaurantForLayout = null;
+  }
+}
