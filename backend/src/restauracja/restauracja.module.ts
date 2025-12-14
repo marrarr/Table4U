@@ -5,10 +5,11 @@ import { RestauracjaService } from './restauracja.service';
 import { RestauracjaController } from './restauracja.controller';
 import { RestauracjaObrazModule } from './obrazy/restauracjaObraz.module';
 import { UzytkownikModule } from 'src/uzytkownik/uzytkownik.module';
+import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Restauracja]),
+    TypeOrmModule.forFeature([Restauracja, RestauracjaObraz]),
     RestauracjaObrazModule,
     UzytkownikModule,
   ],

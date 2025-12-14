@@ -29,7 +29,6 @@ export class RestauracjaComponent implements OnInit {
     adres: '',
     nr_kontaktowy: '',
     email: '',
-    zdjecie: null
   };
 
   editedRestaurant: Restauracja = {
@@ -38,7 +37,6 @@ export class RestauracjaComponent implements OnInit {
     adres: '',
     nr_kontaktowy: '',
     email: '',
-    zdjecie: null
   };
 
   ngOnInit() {
@@ -56,7 +54,6 @@ export class RestauracjaComponent implements OnInit {
   async saveRestaurant() {
     if (this.newRestaurant.nazwa && this.newRestaurant.adres && this.newRestaurant.nr_kontaktowy && this.newRestaurant.email) {
       try {
-        this.newRestaurant.zdjecie = '0';
         const created = await this.restauracjaService.createRestaurant(this.newRestaurant);
         this.restaurant.push(created);
         this.newRestaurant = {
@@ -64,7 +61,6 @@ export class RestauracjaComponent implements OnInit {
           adres: '',
           nr_kontaktowy: '',
           email: '',
-          zdjecie: null
         };
         this.addingDialog = false;
       } catch (error) {
@@ -76,10 +72,10 @@ export class RestauracjaComponent implements OnInit {
   }
 
   openEditDialog(restaurant: Restauracja) {
-    this.editedRestaurant = { ...restaurant }; 
+    this.editedRestaurant = { ...restaurant };
     this.editingDialog = true;
   }
-  
+
   async updateRestaurant() {
   try {
     const updated = await this.restauracjaService.updateRestaurant(
@@ -87,7 +83,7 @@ export class RestauracjaComponent implements OnInit {
       this.editedRestaurant
     );
 
-    
+
     const index = this.restaurant.findIndex(r => r.restauracja_id === updated.restauracja_id);
     if (index !== -1) this.restaurant[index] = updated;
 
@@ -97,5 +93,11 @@ export class RestauracjaComponent implements OnInit {
     console.error('Błąd podczas aktualizacji restauracji:', error);
   }
 }
+
+  getMainImage(restaurant: Restauracja) {
+    if (!restaurant.obrazy) return null;
+    return restaurant.obrazy.find(o => o.czy_glowne) || null;
+  }
+
 }
 

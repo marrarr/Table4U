@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { restauracjaObraz } from './restauracjaObraz.entity';
+import { RestauracjaObraz } from './restauracjaObraz.entity';
 import { Restauracja } from '../restauracja.entity';
 
 @Injectable()
 export class RestauracjaObrazService {
   constructor(
-    @InjectRepository(restauracjaObraz)
-    private obrazRepository: Repository<restauracjaObraz>,
+    @InjectRepository(RestauracjaObraz)
+    private obrazRepository: Repository<RestauracjaObraz>,
     @InjectRepository(Restauracja)
     private restauracjaRepository: Repository<Restauracja>,
   ) {}
@@ -24,7 +24,7 @@ export class RestauracjaObrazService {
   async dodajObraz(
     restauracjaId: number,
     file: Express.Multer.File,
-  ): Promise<restauracjaObraz> {
+  ): Promise<RestauracjaObraz> {
     this.walidujPlik(file);
 
     const restauracja = await this.restauracjaRepository.findOne({
@@ -49,7 +49,7 @@ export class RestauracjaObrazService {
   async zaktualizujObraz(
     id: number, 
     file: Express.Multer.File
-  ): Promise<restauracjaObraz> {
+  ): Promise<RestauracjaObraz> {
     this.walidujPlik(file);
 
     const existingObraz = await this.obrazRepository.findOne({

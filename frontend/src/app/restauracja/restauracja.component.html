@@ -18,7 +18,7 @@
   <ul>
     <div *ngFor="let restaurant of restaurant" class="restaurant-card">
       <div class="restaurants-list">
-        
+
           <div class="restaurant-header">
             <h3>{{ restaurant.nazwa }}</h3>
           </div>
@@ -39,13 +39,17 @@
               {{ restaurant.email }}
             </p>
 
-            <!-- Zdjęcie jeśli istnieje -->
-            <div class="image" *ngIf="restaurant.zdjecie">
-              <img [src]="restaurant.zdjecie" [alt]="restaurant.nazwa" class="restaurant-image">
+            <!-- Główne zdjęcie jeśli istnieje -->
+            <div class="image" *ngIf="getMainImage(restaurant) as img">
+              <img
+                [src]="'data:' + img.typ + ';base64,' + img.obrazBase64"
+                [alt]="restaurant.nazwa"
+                class="restaurant-image"
+              >
             </div>
-          </div>
 
-          <div class="restaurant-actions">
+
+            <div class="restaurant-actions">
 
             <button pButton icon="pi pi-pencil" label="Edytuj" class="p-button-sm p-button-warning"
               (click)="openEditDialog(restaurant)">
@@ -57,7 +61,6 @@
       }})(email: {{ restaurant.email }})
 
     </div>
-  </ul>
 </div>
 
 <!-- Dialog dodawania restauracji, którego widocznosć jest zależna od zmiennej addingDialog -->

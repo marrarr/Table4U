@@ -1,16 +1,14 @@
-// src/app/home/home.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 import { RestauracjaService } from '../restauracja/restauracja.service';
 import { Restauracja } from '../models/restauracja.model';
 import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
-import { HttpClient } from '@angular/common/http';
 
 interface CreateRezerwacjaDto {
   restauracja_id: number;
@@ -43,7 +41,6 @@ export class HomeComponent implements OnInit {
   reservationDialogVisible = false;
   selectedRestaurant: Restauracja | null = null;
 
-  // Cache zajętych stolików: klucz = restauracja_id, wartość = Set<tableId>
   private occupiedTables = new Map<number, Set<number>>();
 
   constructor(
@@ -77,9 +74,11 @@ export class HomeComponent implements OnInit {
   openReservationDialog(restauracja: Restauracja) {
     this.selectedRestaurant = restauracja;
 
-    // Przekaż tylko stoliki zajęte w tej konkretnej restauracji
-    const occupiedInThisRestaurant = this.occupiedTables.get(restauracja.restauracja_id!) || new Set<number>();
-    (ReservationDialogComponent as any).permanentlyOccupied = Array.from(occupiedInThisRestaurant);
+    const occupiedInThisRestaurant =
+      this.occupiedTables.get(restauracja.restauracja_id!) || new Set<number>();
+
+    (ReservationDialogComponent as any).permanentlyOccupied =
+      Array.from(occupiedInThisRestaurant);
 
     this.reservationDialogVisible = true;
   }
@@ -94,18 +93,11 @@ export class HomeComponent implements OnInit {
     const tableIds = selectedTables.map(t => t.id);
     const totalSeats = selectedTables.reduce((s, t) => s + t.seats, 0);
 
-    // Zbieranie danych
     const imie = prompt("Twoje imię i nazwisko:", "Jan Kowalski")?.trim();
-    if (!imie) {
-      this.messageService.add({ severity: 'warn', summary: 'Anulowano', detail: 'Podaj imię' });
-      return;
-    }
+    if (!imie) return;
 
     const telefon = prompt("Numer telefonu:", "600 123 456")?.trim();
-    if (!telefon) {
-      this.messageService.add({ severity: 'warn', summary: 'Anulowano', detail: 'Podaj telefon' });
-      return;
-    }
+    if (!telefon) return;
 
     const data = prompt("Data rezerwacji (YYYY-MM-DD):", new Date().toISOString().slice(0, 10))?.trim();
     if (!data) return;
@@ -124,10 +116,8 @@ export class HomeComponent implements OnInit {
     };
 
     try {
-      // Wysyłamy do backendu
       await this.http.post('http://localhost:3000/rezerwacja', payload).toPromise();
 
-      // TYLKO JEŚLI backend potwierdzi → blokujemy stoliki lokalnie
       const set = this.occupiedTables.get(restauracjaId) || new Set<number>();
       tableIds.forEach(id => set.add(id));
       this.occupiedTables.set(restauracjaId, set);
@@ -135,7 +125,7 @@ export class HomeComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Rezerwacja przyjęta!',
-        detail: `Zarezerwowano ${selectedTables.length} stolik(ów) na ${data} ${godzina} dla ${imie}`
+        detail: `Zarezerwowano stoliki na ${data} ${godzina}`
       });
 
     } catch (error: any) {
@@ -143,15 +133,17 @@ export class HomeComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Błąd rezerwacji',
-        detail: error.error?.message || 'Nie udało się zapisać rezerwacji. Stoliki nie zostały zablokowane.'
+        detail: error.error?.message || 'Nie udało się zapisać rezerwacji.'
       });
-
-      // Backend zwrócił błąd → NIE blokujemy stolików!
-      // Użytkownik może spróbować jeszcze raz
       return;
     }
 
-    // Zamknij dialog tylko po sukcesie
     this.reservationDialogVisible = false;
   }
+
+  getMainImage(restauracja: Restauracja) {
+    if (!restauracja.obrazy) return null;
+    return restauracja.obrazy.find(o => o.czy_glowne) || null;
+  }
+
 }
