@@ -15,12 +15,12 @@ import { ReservationDialogComponent, Table } from '../reservation/reservation-di
   selector: 'app-home',
   standalone: true,
   imports: [
-    ButtonModule, 
-    InputTextModule, 
-    HttpClientModule, 
-    CommonModule, 
-    DialogModule, 
-    FormsModule, 
+    ButtonModule,
+    InputTextModule,
+    HttpClientModule,
+    CommonModule,
+    DialogModule,
+    FormsModule,
     ReservationDialogComponent
   ],
   providers: [RestauracjaService],
@@ -31,7 +31,7 @@ export class RestauracjaComponent implements OnInit {
   constructor(private restauracjaService: RestauracjaService) { }
   protected readonly title = signal('Witaj na stronie restauracji!');
 
-  restaurant: Restauracja[] = [];
+  restauracje: Restauracja[] = [];
   addingDialog = false;
   editingDialog = false;
 
@@ -60,7 +60,7 @@ export class RestauracjaComponent implements OnInit {
 
   async getRestaurant() {
     try {
-      this.restaurant = await this.restauracjaService.getMyRestaurants();
+      this.restauracje = await this.restauracjaService.getMyRestaurants();
     } catch (error) {
       console.error('Błąd podczas pobierania restauracji:', error);
     }
@@ -71,8 +71,8 @@ export class RestauracjaComponent implements OnInit {
       try {
 
         const created = await this.restauracjaService.createRestaurant(this.newRestaurant);
-        this.restaurant.push(created);
-        
+        this.restauracje.push(created);
+
         // 2. Resetujemy formularz
         this.newRestaurant = {
           nazwa: '',
@@ -80,11 +80,11 @@ export class RestauracjaComponent implements OnInit {
           nr_kontaktowy: '',
           email: '',
         };
-        
+
         // 3. Zamykamy okno dodawania
         this.addingDialog = false;
 
-        // 4. === NOWOŚĆ === 
+        // 4. === NOWOŚĆ ===
         // Otwieramy edytor układu sali dla nowo utworzonej restauracji
         setTimeout(() => {
           this.openFloorPlanEditor(created);
@@ -109,9 +109,9 @@ export class RestauracjaComponent implements OnInit {
         this.editedRestaurant.restauracja_id!,
         this.editedRestaurant
       );
-      
-      const index = this.restaurant.findIndex(r => r.restauracja_id === updated.restauracja_id);
-      if (index !== -1) this.restaurant[index] = updated;
+
+      const index = this.restauracje.findIndex(r => r.restauracja_id === updated.restauracja_id);
+      if (index !== -1) this.restauracje[index] = updated;
 
       this.editingDialog = false;
 
@@ -131,14 +131,11 @@ export class RestauracjaComponent implements OnInit {
     this.currentRestaurantForLayout = restaurant;
     this.floorPlanDialogVisible = true;
   }
-}
 
   getMainImage(restaurant: Restauracja) {
     if (!restaurant.obrazy) return null;
     return restaurant.obrazy.find(o => o.czy_glowne) || null;
   }
-
-}
 
   onLayoutSaved(newTables: Table[]) {
     console.log('Zapisano nowy układ dla restauracji:', this.currentRestaurantForLayout?.nazwa);

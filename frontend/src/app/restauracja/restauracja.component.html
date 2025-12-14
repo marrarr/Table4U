@@ -13,52 +13,53 @@
 
   </div>
   <ul>
-    <div *ngFor="let restaurant of restaurant" class="restaurant-card">
+    <li *ngFor="let restaurant of restauracje" class="restaurant-card">
       <div class="restaurants-list">
 
-          <div class="restaurant-header">
-            <h3>{{ restaurant.nazwa }}</h3>
+        <div class="restaurant-header">
+          <h3>{{ restaurant.nazwa }}</h3>
+        </div>
+
+        <div class="restaurant-details">
+          <p class="address">
+            <i class="pi pi-map-marker"></i>
+            {{ restaurant.adres }}
+          </p>
+
+          <p class="phone" *ngIf="restaurant.nr_kontaktowy">
+            <i class="pi pi-phone"></i>
+            {{ restaurant.nr_kontaktowy }}
+          </p>
+
+          <p class="email" *ngIf="restaurant.email">
+            <i class="pi pi-envelope"></i>
+            {{ restaurant.email }}
+          </p>
+
+          <div class="image" *ngIf="getMainImage(restaurant) as img">
+            <img
+              [src]="'data:' + img.typ + ';base64,' + img.obrazBase64"
+              [alt]="restaurant.nazwa"
+              class="restaurant-image"
+            >
           </div>
 
-          <div class="restaurant-details">
-            <p class="address">
-              <i class="pi pi-map-marker"></i>
-              {{ restaurant.adres }}
-            </p>
-
-            <p class="phone" *ngIf="restaurant.nr_kontaktowy">
-              <i class="pi pi-phone"></i>
-              {{ restaurant.nr_kontaktowy }}
-            </p>
-
-            <p class="email" *ngIf="restaurant.email">
-              <i class="pi pi-envelope"></i>
-              {{ restaurant.email }}
-            </p>
-
-            <!-- Główne zdjęcie jeśli istnieje -->
-            <div class="image" *ngIf="getMainImage(restaurant) as img">
-              <img
-                [src]="'data:' + img.typ + ';base64,' + img.obrazBase64"
-                [alt]="restaurant.nazwa"
-                class="restaurant-image"
-              >
-            </div>
-
-
-            <div class="restaurant-actions">
-
-            <button pButton icon="pi pi-pencil" label="Edytuj" class="p-button-sm p-button-warning"
-              (click)="openEditDialog(restaurant)">
+          <div class="restaurant-actions">
+            <button pButton icon="pi pi-pencil" label="Edytuj"
+                    class="p-button-sm p-button-warning"
+                    (click)="openEditDialog(restaurant)">
             </button>
           </div>
+
+        </div>
+
+        <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }}
       </div>
+    </li>
+  </ul>
 
-      <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }}
-    </div>
-</div>
 
-<p-dialog [(visible)]="addingDialog" [header]="'Dodawanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
+  <p-dialog [(visible)]="addingDialog" [header]="'Dodawanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
   <ng-template pTemplate="content">
     <div class="field">
       <h4>Dane restauracji</h4>
@@ -125,3 +126,4 @@
   [isEditable]="true"
   (layoutSaved)="onLayoutSaved($event)">
 </app-reservation-dialog>
+</div>
