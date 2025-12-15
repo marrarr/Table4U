@@ -1,19 +1,16 @@
 import {
   Controller,
-  Get,
   Post,
   Put,
   Delete,
   Param,
   UseInterceptors,
   UploadedFile,
-  Res,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
 import { RestauracjaObraz } from './restauracjaObraz.entity';
 import { RestauracjaObrazService } from './restauracjaObraz.service';
 
@@ -29,7 +26,9 @@ export class RestauracjaObrazController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif|webp)' }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif|webp)' ,
+          skipMagicNumbersValidation: true
+          })
         ],
       }),
     )
@@ -46,7 +45,9 @@ export class RestauracjaObrazController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif|webp)' }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|gif|webp)' ,
+          skipMagicNumbersValidation: true
+          })
         ],
       }),
     )

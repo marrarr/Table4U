@@ -5,7 +5,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Stolik } from './stolik.entity';
 import { Repository } from 'typeorm';
 
-
 /**
  * Testy jednostkowe dla StolikiService
  * Testują funkcjonalności zarządzania stolikami w restauracjach
