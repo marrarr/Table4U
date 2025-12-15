@@ -4,7 +4,6 @@ import { RezerwacjaService } from './rezerwacja.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Rezerwacja } from './rezerwacja.entity';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
 
 /**
  * Testy jednostkowe dla RezerwacjaService

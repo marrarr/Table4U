@@ -5,7 +5,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Restauracja } from './restauracja.entity';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
 
 /**
  * Testy jednostkowe dla RestauracjaService
