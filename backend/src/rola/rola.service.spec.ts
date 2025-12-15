@@ -4,7 +4,6 @@ import { RoleService } from './rola.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Rola } from './rola.entity';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
 
 /**
  * Testy jednostkowe dla RoleService

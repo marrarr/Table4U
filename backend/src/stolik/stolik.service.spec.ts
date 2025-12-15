@@ -4,7 +4,6 @@ import { StolikiService } from './stolik.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Stolik } from './stolik.entity';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
 
 /**
  * Testy jednostkowe dla StolikiService
