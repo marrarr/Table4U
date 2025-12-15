@@ -27,6 +27,7 @@ export class RestauracjaService {
   }
 
   updateRestaurant(id: number, data: Partial<Restauracja>): Promise<Restauracja> {
+    data.obrazy = undefined;
     return firstValueFrom(this.http.put<Restauracja>(`${this.apiUrl}/${id}`, data));
   }
 
