@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 'typeorm';
 import { Rezerwacja } from '../rezerwacja/rezerwacja.entity';
-import { Uzytkownik } from 'src/uzytkownik/uzytkownik.entity';
+import { Uzytkownik } from '../uzytkownik/uzytkownik.entity';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
 
 @Entity('restauracja')
