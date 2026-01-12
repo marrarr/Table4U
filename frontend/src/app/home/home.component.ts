@@ -83,13 +83,15 @@ export class HomeComponent implements OnInit {
     this.reservationDialogVisible = true;
   }
 
-  // Nowa sygnatura: odbiera obiekt z wybranymi stolikami i danymi z formularza
-  onReservationConfirmed(event: { tables: { id: number; seats: number }[]; 
-  form: { 
-    imie: string; 
-    telefon: string; 
-    data: Date; 
-    godzina: Date;} }) {
+  onReservationConfirmed(event: { 
+    tables: { id: number; seats: number }[]; 
+    form: { 
+      imie: string; 
+      telefon: string; 
+      data: Date; 
+      godzina: Date;
+    } 
+  }) {
     const selectedTables = event.tables;
     const form = event.form;
 
@@ -102,17 +104,6 @@ export class HomeComponent implements OnInit {
     const tableIds = selectedTables.map(t => t.id);
     const totalSeats = selectedTables.reduce((s, t) => s + t.seats, 0);
 
-    const imie = prompt("Twoje imię i nazwisko:", "Jan Kowalski")?.trim();
-    if (!imie) return;
-
-    const telefon = prompt("Numer telefonu:", "600 123 456")?.trim();
-    if (!telefon) return;
-
-    const data = prompt("Data rezerwacji (YYYY-MM-DD):", new Date().toISOString().slice(0, 10))?.trim();
-    if (!data) return;
-
-    const godzina = prompt("Godzina (HH:MM):", "19:00")?.trim();
-    if (!godzina) return;
     // Formatowanie daty i godziny do formatu oczekiwanego przez backend
     const dataStr = form.data.toISOString().slice(0, 10); // YYYY-MM-DD
     const godzinaStr = form.godzina.toTimeString().slice(0, 5); // HH:MM
@@ -129,7 +120,7 @@ export class HomeComponent implements OnInit {
 
     this.http.post('http://localhost:3000/rezerwacja', payload).subscribe({
       next: () => {
-        // Sukces – blokujemy stoliki lokalnie (na wypadek ponownego otwarcia dialogu)
+        // Sukces – blokujemy stoliki lokalnie
         const set = this.occupiedTables.get(restauracjaId) || new Set<number>();
         tableIds.forEach(id => set.add(id));
         this.occupiedTables.set(restauracjaId, set);
@@ -149,12 +140,10 @@ export class HomeComponent implements OnInit {
           summary: 'Błąd rezerwacji',
           detail: error.error?.message || 'Nie udało się zapisać rezerwacji. Spróbuj ponownie.'
         });
-        // Nie zamykamy dialogu – użytkownik może poprawić dane lub wybrać inne stoliki
       }
     });
   }
 
-  // Metoda do zamknięcia dialogu z zewnątrz (np. przycisk Anuluj w dialogu już to robi)
   onDialogHide() {
     this.reservationDialogVisible = false;
     this.selectedRestaurant = null;
@@ -164,5 +153,4 @@ export class HomeComponent implements OnInit {
     if (!restauracja.obrazy) return null;
     return restauracja.obrazy.find(o => o.czy_glowne) || null;
   }
-
 }
