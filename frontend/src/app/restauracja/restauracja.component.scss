@@ -1,56 +1,458 @@
-@import '../home/home.component.scss';
+// === VARIABLES ===
+$primary: #5c4033;
+$primary-dark: #3d2a22;
+$accent: #c9a959;
+$accent-hover: #d4b86a;
+$text-dark: #2d2d2d;
+$text-medium: #555555;
+$text-light: #888888;
+$bg-page: #f8f7f5;
+$bg-card: #ffffff;
+$border-light: #e8e5e0;
+$shadow-card: 0 2px 12px rgba(0, 0, 0, 0.05);
+$shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.1);
+$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$radius: 14px;
 
-.home {
-    text-align: center;
-    padding: 2rem;
-    background-color: antiquewhite;
+// === ADMIN CONTAINER ===
+.admin-container {
+  min-height: 100vh;
+  background: $bg-page;
+  padding: 2rem;
+}
+
+// === HEADER ===
+.admin-header {
+  max-width: 1100px;
+  margin: 0 auto 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.header-content {
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: $primary;
+    margin: 0 0 0.25rem;
   }
-  button{
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      border: none;
-      background-color: rgb(103, 212, 255);
-      border-radius: 4px;
-      font-weight: bold;
-      // margin-top: 0.5rem;
-      height: 4rem;
-      margin-right: 15px;
-    
+
+  .header-subtitle {
+    font-size: 1rem;
+    color: $text-light;
+    margin: 0;
   }
-  button:hover{
-    background-color: rgb(39, 122, 155);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+// === BUTTONS ===
+.btn-primary {
+  background: $accent !important;
+  border: none !important;
+  color: $primary !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: 10px !important;
+  transition: $transition !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem !important;
+
+  &:hover {
+    background: $accent-hover !important;
+    transform: translateY(-2px);
   }
-/* Cały dialog */
-.my-dialog {
+}
+
+.btn-outline {
+  background: transparent !important;
+  border: 1.5px solid $border-light !important;
+  color: $text-medium !important;
+  font-weight: 500 !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: 10px !important;
+  transition: $transition !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem !important;
+
+  &:hover {
+    background: $bg-card !important;
+    border-color: #ccc !important;
+  }
+}
+
+.btn-secondary {
+  background: transparent !important;
+  border: 1.5px solid $border-light !important;
+  color: $text-dark !important;
+  font-weight: 500 !important;
+  padding: 0.75rem 1.5rem !important;
   border-radius: 8px !important;
+  transition: $transition !important;
+  cursor: pointer;
+
+  &:hover {
+    background: #f5f3ef !important;
+  }
 }
 
-/* Treść dialogu */
-.my-dialog .p-dialog-content {
-  background-color: #fff !important;
-  padding: 1.5rem !important;
+.btn-edit {
+  background: transparent !important;
+  border: 1.5px solid $accent !important;
+  color: $accent !important;
+  font-weight: 500 !important;
+  padding: 0.6rem 1rem !important;
+  border-radius: 8px !important;
+  transition: $transition !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem !important;
+
+  &:hover {
+    background: $accent !important;
+    color: $primary !important;
+  }
 }
 
-/* Stopka */
-.my-dialog .p-dialog-footer {
-  background-color: #f7f7f7 !important;
-  text-align: right;
-  padding: 1rem !important;
+// === RESTAURANT LIST ===
+.restaurants-list {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-/* Nagłówek */
-.my-dialog .p-dialog-header {
-  background-color: #007ad9 !important;
-  color: #fff !important;
-  font-size: 1.2rem;
-  border-top-left-radius: 8px !important;
-  border-top-right-radius: 8px !important;
+// === RESTAURANT CARD ===
+.restaurant-card {
+  background: $bg-card;
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  transition: $transition;
+  display: flex;
+  animation: slideIn 0.4s ease-out backwards;
+
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.06}s;
+    }
+  }
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateX(4px);
+
+    .card-image img {
+      transform: scale(1.05);
+    }
+  }
 }
-.field{
-  margin-bottom: 10px;
+
+.card-image {
+  width: 200px;
+  min-height: 160px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0ece6 0%, #e8e4dd 100%);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  &.card-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 2.5rem;
+      color: #ccc;
+    }
+  }
 }
-.field label{
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+
+.card-body {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: $primary;
+  margin: 0 0 0.75rem;
+}
+
+.card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: auto;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: $text-medium;
+
+  i {
+    color: $accent;
+    font-size: 0.8rem;
+  }
+}
+
+.card-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $border-light;
+}
+
+// === EMPTY STATE ===
+.empty-state {
+  max-width: 400px;
+  margin: 4rem auto;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+
+  .empty-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #f5f3ef 0%, #ebe8e3 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 2.5rem;
+      color: #bbb;
+    }
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.4rem;
+    color: $text-dark;
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: $text-light;
+    margin: 0 0 1.5rem;
+  }
+}
+
+// === DIALOG STYLES ===
+::ng-deep .admin-dialog {
+  border-radius: 14px !important;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+  max-width: 500px;
+  width: 100%;
+
+  .p-dialog-header {
+    background: $primary !important;
+    color: #fff !important;
+    padding: 1.25rem 1.5rem !important;
+    border: none !important;
+
+    .p-dialog-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .p-dialog-header-close {
+      color: #fff !important;
+      opacity: 0.7;
+
+      &:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+
+  .p-dialog-content {
+    background: #fff !important;
+    padding: 1.5rem !important;
+  }
+
+  .p-dialog-footer {
+    background: #faf9f7 !important;
+    padding: 1rem 1.5rem !important;
+    border-top: 1px solid $border-light !important;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: $text-dark;
+  }
+
+  input {
+    padding: 0.8rem 1rem !important;
+    border: 1.5px solid $border-light !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    transition: $transition !important;
+
+    &::placeholder {
+      color: #aaa;
+    }
+
+    &:focus {
+      border-color: $accent !important;
+      box-shadow: 0 0 0 3px rgba($accent, 0.12) !important;
+      outline: none !important;
+    }
+  }
+
+  // File upload styling
+  ::ng-deep .p-fileupload {
+    .p-fileupload-buttonbar {
+      background: transparent;
+      border: none;
+      padding: 0;
+      gap: 0.5rem;
+    }
+
+    .p-button {
+      background: $bg-page !important;
+      border: 1.5px dashed $border-light !important;
+      color: $text-medium !important;
+      border-radius: 8px !important;
+
+      &:hover {
+        background: #fff !important;
+        border-color: $accent !important;
+      }
+    }
+
+    .p-fileupload-content {
+      border: 1.5px dashed $border-light;
+      border-radius: 8px;
+      padding: 1rem;
+      background: $bg-page;
+    }
+  }
+}
+
+// === ANIMATIONS ===
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// === RESPONSIVE ===
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .header-actions {
+    justify-content: center;
+  }
+
+  .restaurant-card {
+    flex-direction: column;
+  }
+
+  .card-image {
+    width: 100%;
+    height: 180px;
+    min-height: auto;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  ::ng-deep .admin-dialog {
+    margin: 0.5rem;
+
+    .p-dialog-footer {
+      flex-direction: column-reverse;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
 }

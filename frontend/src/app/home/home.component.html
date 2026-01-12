@@ -1,63 +1,62 @@
 <div class="home-container">
-  <h1>Lista Restauracji</h1>
+  <header class="page-header">
+    <h1>Restauracje</h1>
+    <p class="header-subtitle">Wybierz miejsce i zarezerwuj stolik</p>
+  </header>
 
-  <div class="restaurants-list">
-    <div *ngFor="let restauracja of restauracje" class="restaurant-card">
-      <div class="restaurant-header">
-        <h3>{{ restauracja.nazwa }}</h3>
+  <div class="restaurants-grid" *ngIf="!loading && restauracje.length > 0">
+    <article *ngFor="let restauracja of restauracje" class="restaurant-card">
+      
+      <div class="card-image" *ngIf="getMainImage(restauracja) as img">
+        <img [src]="'data:' + img.typ + ';base64,' + img.obrazBase64" [alt]="restauracja.nazwa" />
+        <div class="image-overlay"></div>
+      </div>
+      <div class="card-image card-placeholder" *ngIf="!getMainImage(restauracja)">
+        <i class="pi pi-image"></i>
       </div>
 
-      <div class="restaurant-details">
-        <p class="address">
-          <i class="pi pi-map-marker"></i>
-          {{ restauracja.adres }}
-        </p>
+      <div class="card-content">
+        <h3 class="card-title">{{ restauracja.nazwa }}</h3>
 
-        <p class="phone" *ngIf="restauracja.nr_kontaktowy">
-          <i class="pi pi-phone"></i>
-          {{ restauracja.nr_kontaktowy }}
-        </p>
+        <div class="card-details">
+          <div class="detail-item" *ngIf="restauracja.adres">
+            <i class="pi pi-map-marker"></i>
+            <span>{{ restauracja.adres }}</span>
+          </div>
 
-        <p class="email" *ngIf="restauracja.email">
-          <i class="pi pi-envelope"></i>
-          {{ restauracja.email }}
-        </p>
+          <div class="detail-item" *ngIf="restauracja.nr_kontaktowy">
+            <i class="pi pi-phone"></i>
+            <span>{{ restauracja.nr_kontaktowy }}</span>
+          </div>
 
-        <!-- Główne zdjęcie restauracji -->
-        <div class="image" *ngIf="getMainImage(restauracja) as img">
-          <img
-            [src]="'data:' + img.typ + ';base64,' + img.obrazBase64"
-            [alt]="restauracja.nazwa"
-            class="restaurant-image"
-          >
+          <div class="detail-item" *ngIf="restauracja.email">
+            <i class="pi pi-envelope"></i>
+            <span>{{ restauracja.email }}</span>
+          </div>
         </div>
 
-
-        <div class="restaurant-actions">
-        <button pButton
-                icon="pi pi-book"
-                label="Rezerwuj"
-                class="p-button-success"
-                (click)="openReservationDialog(restauracja)">
+        <button pButton class="reserve-btn" (click)="openReservationDialog(restauracja)">
+          <i class="pi pi-calendar-plus"></i>
+          Rezerwuj stolik
         </button>
       </div>
-    </div>
+    </article>
   </div>
 
-  <!-- Loading i empty state -->
-  <div *ngIf="loading" class="loading">
-    <p-progressSpinner></p-progressSpinner>
+  <div *ngIf="loading" class="loading-state">
+    <p-progressSpinner strokeWidth="3" animationDuration=".8s"></p-progressSpinner>
     <p>Ładowanie restauracji...</p>
   </div>
 
   <div *ngIf="!loading && restauracje.length === 0" class="empty-state">
-    <i class="pi pi-inbox" style="font-size: 3rem"></i>
+    <div class="empty-icon">
+      <i class="pi pi-building"></i>
+    </div>
     <h3>Brak restauracji</h3>
-    <p>Nie znaleziono żadnych restauracji w systemie.</p>
+    <p>Nie znaleziono żadnych restauracji w systemie</p>
   </div>
 </div>
 
-<!-- DIALOG REZERWACJI – MUSI BYĆ TUTAJ, NA KOŃCU PLIKU, POZA WSZYSTKIMI DIVAMI -->
 <app-reservation-dialog
   [visible]="reservationDialogVisible"
   [restaurantName]="selectedRestaurant?.nazwa || ''"

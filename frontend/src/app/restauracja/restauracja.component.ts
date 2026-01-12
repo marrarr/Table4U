@@ -7,6 +7,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+// Dodano moduł do uploadu plików
+import { FileUploadModule } from 'primeng/fileupload';
 
 // Importujemy komponent dialogu oraz interfejs Table
 import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
@@ -21,7 +23,8 @@ import { ReservationDialogComponent, Table } from '../reservation/reservation-di
     CommonModule,
     DialogModule,
     FormsModule,
-    ReservationDialogComponent
+    ReservationDialogComponent,
+    FileUploadModule // Dodano tutaj
   ],
   providers: [RestauracjaService],
   templateUrl: './restauracja.component.html',
@@ -34,6 +37,9 @@ export class RestauracjaComponent implements OnInit {
   restauracje: Restauracja[] = [];
   addingDialog = false;
   editingDialog = false;
+
+  // Zmienna do przechowywania wybranych plików (zdjęć)
+  selectedFiles: File[] = [];
 
   // Zmienne do obsługi dialogu układu sali (Floor Plan)
   floorPlanDialogVisible = false;
@@ -66,20 +72,48 @@ export class RestauracjaComponent implements OnInit {
     }
   }
 
+  // Metoda wywoływana, gdy użytkownik wybierze zdjęcia w formularzu
+  onNewFilesSelected(event: any) {
+    // PrimeNG zwraca wybrane pliki w event.currentFiles
+    this.selectedFiles = event.currentFiles;
+  }
+
   async saveRestaurant() {
     if (this.newRestaurant.nazwa && this.newRestaurant.adres && this.newRestaurant.nr_kontaktowy && this.newRestaurant.email) {
       try {
+        // === ZMIANA: Użycie FormData do przesłania danych i zdjęć ===
+        const formData = new FormData();
+        
+        // Dodajemy pola tekstowe
+        formData.append('nazwa', this.newRestaurant.nazwa);
+        formData.append('adres', this.newRestaurant.adres);
+        formData.append('nr_kontaktowy', this.newRestaurant.nr_kontaktowy);
+        formData.append('email', this.newRestaurant.email);
 
-        const created = await this.restauracjaService.createRestaurant(this.newRestaurant);
+        // Dodajemy wybrane zdjęcia
+        if (this.selectedFiles && this.selectedFiles.length > 0) {
+          for (let file of this.selectedFiles) {
+            // Klucz 'images' musi pasować do tego, czego oczekuje Twój backend (np. @UploadedFiles w NestJS)
+            formData.append('images', file);
+          }
+        }
+
+        // UWAGA: Twoja metoda service.createRestaurant musi teraz przyjmować FormData
+        // Jeśli TypeScript zgłasza błąd typu, musisz zaktualizować definicję w serwisie.
+        // Tutaj rzutuję na 'any', aby uniknąć błędu kompilacji w tym pliku, 
+        // ale w serwisie należy zmienić typ argumentu z CreateRestauracjaDto na FormData.
+        const created = await this.restauracjaService.createRestaurant(formData as any);
+        
         this.restauracje.push(created);
 
-        // 2. Resetujemy formularz
+        // 2. Resetujemy formularz i pliki
         this.newRestaurant = {
           nazwa: '',
           adres: '',
           nr_kontaktowy: '',
           email: '',
         };
+        this.selectedFiles = []; // Czyścimy listę plików
 
         // 3. Zamykamy okno dodawania
         this.addingDialog = false;
@@ -133,8 +167,9 @@ export class RestauracjaComponent implements OnInit {
   }
 
   getMainImage(restaurant: Restauracja) {
-    if (!restaurant.obrazy) return null;
-    return restaurant.obrazy.find(o => o.czy_glowne) || null;
+    // Zabezpieczenie na wypadek, gdyby obrazy były undefined
+    if (!restaurant.obrazy || restaurant.obrazy.length === 0) return null;
+    return restaurant.obrazy.find(o => o.czy_glowne) || restaurant.obrazy[0];
   }
 
   onLayoutSaved(newTables: Table[]) {
