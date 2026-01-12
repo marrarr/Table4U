@@ -1,5 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Rezerwacja } from '../rezerwacja/rezerwacja.entity';
+import { Restauracja } from '../restauracja/restauracja.entity';
 
 @Entity('stolik')
 export class Stolik {
@@ -26,4 +34,19 @@ export class Stolik {
 
   @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.stolik)
   rezerwacje: Rezerwacja[];
+
+  @Column()
+  pozycjaX_UI: number;
+
+  @Column()
+  pozycjaY_UI: number;
+
+  @ManyToOne(() => Restauracja, (restauracja) => restauracja.stoliki, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'restauracja_id' })
+  restauracja: Restauracja;
+
+  @Column()
+  restauracja_id: number;
 }

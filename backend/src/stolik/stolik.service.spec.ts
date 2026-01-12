@@ -56,6 +56,8 @@ describe('StolikiService', () => {
       ilosc_miejsc: 4,
       lokalizacja: 'Przy oknie',
       restauracja_id: 1,
+      pozycjaX_UI: 13,
+      pozycjaY_UI: 31,
     };
 
     // Mockowy stolik po zapisaniu w bazie (z wygenerowanym ID)

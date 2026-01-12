@@ -23,11 +23,12 @@ export class StolikiController {
   }
 
   @Put(':id')
-  upsert(
+  update(
     @Param('id') id: string,
     @Body() updateStolikDto: UpdateStolikDto,
   ): Promise<Stolik> {
-    return this.stolikiService.upsert(+id, updateStolikDto);
+    return this.stolikiService.update(+id, updateStolikDto);
+    // return this.stolikiService.upsert(+id, updateStolikDto);
   }
 
   @Delete(':id')
