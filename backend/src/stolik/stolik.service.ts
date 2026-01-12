@@ -59,4 +59,10 @@ export class StolikiService {
     Object.assign(stolik, updateStolikDto);
     return this.stolikRepository.save(stolik);
   }
+
+  async getStolikiRestauracji(restauracjaId: number) {
+    return this.stolikRepository.find({
+      where: { restauracja_id: restauracjaId },
+    });
+  }
 }

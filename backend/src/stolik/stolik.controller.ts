@@ -35,4 +35,9 @@ export class StolikiController {
   remove(@Param('id') id: string): Promise<void> {
     return this.stolikiService.remove(+id);
   }
+
+  @Get('restauracja/:id')
+  async getStolikiRestauracji(@Param('id') id: number) {
+    return this.stolikiService.getStolikiRestauracji(id);
+  }
 }
