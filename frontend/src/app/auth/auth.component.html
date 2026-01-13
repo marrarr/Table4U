@@ -1,116 +1,73 @@
-<div class="home">
-    <h1>{{ title() }}</h1>
-    <p>To jest strona startowa Twojej aplikacji Angular.</p>
-
-    <h2>Lista restauracji:</h2>
-    <div>
-        <button pButton icon="pi pi-search" label="Zaloguj" (click)="loginDialog = true">
-        </button>
+<div class="auth-page">
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Zarezerwuj stolik</h1>
+            <p class="hero-subtitle">Odkryj najlepsze restauracje w Twojej okolicy</p>
+            <button pButton icon="pi pi-sign-in" label="Zaloguj się" class="login-btn" (click)="loginDialog = true"></button>
+        </div>
+        <div class="hero-decoration"></div>
     </div>
 </div>
 
-
-<p-dialog [(visible)]="addingDialog" [header]="'Rejestracja'" [modal]="true" [styleClass]="'my-dialog'">
+<p-dialog [(visible)]="loginDialog" [header]="'Logowanie'" [modal]="true" [styleClass]="'auth-dialog'" [closable]="true">
     <ng-template pTemplate="content">
-        <div class="field">
-            <div class="field">
-                <h4>Twoje dane</h4>
-                <div class="field">
-                    <label for="Login">Login</label>
-                    <input 
-                    type="text" 
-                    pInputText 
-                    id="Login" [(ngModel)]="newUser.login" 
-                    name="Login" />
-                </div>
-                <div class="field">
-                    <label>Hasło</label>
-                    <input 
-                    type="password" 
-                    pInputText 
-                    [(ngModel)]="newUser.haslo" 
-                    name="haslo" 
-                    placeholder="Wprowadź hasło" />
-                </div>
-                <div class="field">
-                    <label>imie</label>
-                    <input 
-                    type="string" 
-                    pInputText [(ngModel)]="newUser.imie" 
-                    name="imie" />
-                </div>
-                <div class="field">
-                    <label>nazwisko</label>
-                    <input 
-                    type="string" 
-                    pInputText 
-                    [(ngModel)]="newUser.nazwisko" 
-                    name="nazwisko" />
-                </div>
-                <div class="field">
-                    <label>email</label>
-                    <input 
-                    type="string" 
-                    pInputText 
-                    [(ngModel)]="newUser.email" 
-                    name="email" />
-                </div>
-                <div class="field">
-                    <label>telefon</label>
-                    <input 
-                    type="number" 
-                    pInputNumber 
-                    [(ngModel)]="newUser.telefon" 
-                    name="telefon" />
-                </div>
-
-                <div class="field" style="margin-top: 1rem; text-align: center;">
-                    <span>Masz już konto? <a href="#" (click)="switchToLogin($event)" style="color: #007ad9; text-decoration: none;">Zaloguj się tutaj</a></span>
-                </div>
+        <div class="dialog-form">
+            <div class="form-field">
+                <label>Login</label>
+                <input type="text" pInputText [(ngModel)]="user.login" name="Login" placeholder="Wprowadź login" />
+            </div>
+            <div class="form-field">
+                <label>Hasło</label>
+                <input type="password" pInputText [(ngModel)]="user.haslo" name="haslo" placeholder="Wprowadź hasło" />
+            </div>
+            <div class="form-switch">
+                <span>Nie masz konta? <a href="#" (click)="switchToRegister($event)">Zarejestruj się</a></span>
             </div>
         </div>
     </ng-template>
-
     <ng-template pTemplate="footer">
-        <button pButton label="Anuluj" (click)="addingDialog = false"></button>
-        <button pButton label="Zapisz" (click)="register()"></button>
+        <button pButton label="Anuluj" class="btn-secondary" (click)="loginDialog = false"></button>
+        <button pButton label="Zaloguj" class="btn-primary" (click)="login()"></button>
     </ng-template>
 </p-dialog>
 
-<p-dialog [(visible)]="loginDialog" [header]="'Logowanie'" [modal]="true" [styleClass]="'my-dialog'">
+<p-dialog [(visible)]="addingDialog" [header]="'Rejestracja'" [modal]="true" [styleClass]="'auth-dialog'" [closable]="true">
     <ng-template pTemplate="content">
-        <div class="field">
-            <div class="field">
-                <h4>Twoje dane</h4>
-                <div class="field">
-                    <label>Login</label>
-                    <input 
-                    type="text" 
-                    pInputText 
-                    [(ngModel)]="user.login" 
-                    name="Login"
-                    placeholder="Wprowadź login" />
+        <div class="dialog-form">
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Imię</label>
+                    <input type="text" pInputText [(ngModel)]="newUser.imie" name="imie" placeholder="Jan" />
                 </div>
-                <div class="field">
-                    <label>Hasło</label>
-                    <input 
-                    type="password" 
-                    pInputText 
-                    [(ngModel)]="user.haslo" 
-                    name="haslo" 
-                    placeholder="Wprowadź hasło" />
+                <div class="form-field">
+                    <label>Nazwisko</label>
+                    <input type="text" pInputText [(ngModel)]="newUser.nazwisko" name="nazwisko" placeholder="Kowalski" />
                 </div>
-
-                <div class="field" style="margin-top: 1rem; text-align: center;">
-                    <span>Nie masz jeszcze konta? <a href="#" (click)="switchToRegister($event)" style="color: #007ad9; text-decoration: none;">Zrób je tutaj</a></span>
-                </div>
+            </div>
+            <div class="form-field">
+                <label>Login</label>
+                <input type="text" pInputText id="Login" [(ngModel)]="newUser.login" name="Login" placeholder="Twój login" />
+            </div>
+            <div class="form-field">
+                <label>Hasło</label>
+                <input type="password" pInputText [(ngModel)]="newUser.haslo" name="haslo" placeholder="Min. 8 znaków" />
+            </div>
+            <div class="form-field">
+                <label>Email</label>
+                <input type="email" pInputText [(ngModel)]="newUser.email" name="email" placeholder="jan@example.com" />
+            </div>
+            <div class="form-field">
+                <label>Telefon</label>
+                <input type="tel" pInputText [(ngModel)]="newUser.telefon" name="telefon" placeholder="600 123 456" />
+            </div>
+            <div class="form-switch">
+                <span>Masz już konto? <a href="#" (click)="switchToLogin($event)">Zaloguj się</a></span>
             </div>
         </div>
     </ng-template>
-
     <ng-template pTemplate="footer">
-        <button pButton label="Anuluj" (click)="loginDialog = false"></button>
-        <button pButton label="Zaloguj" (click)="login()"></button>
+        <button pButton label="Anuluj" class="btn-secondary" (click)="addingDialog = false"></button>
+        <button pButton label="Zarejestruj" class="btn-primary" (click)="register()"></button>
     </ng-template>
 </p-dialog>
 

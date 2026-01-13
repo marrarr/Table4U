@@ -1,129 +1,151 @@
-<div class="home">
-  <h1>{{ title() }}</h1>
-  <p>To jest strona startowa Twojej aplikacji Angular.</p>
+<div class="admin-container">
+  <header class="admin-header">
+    <div class="header-content">
+      <h1>Panel zarządzania</h1>
+      <p class="header-subtitle">Twoje restauracje</p>
+    </div>
+    <div class="header-actions">
+      <button pButton class="btn-outline" (click)="getRestaurant()">
+        <i class="pi pi-refresh"></i>
+        Odśwież
+      </button>
+      <button pButton class="btn-primary" (click)="addingDialog = true">
+        <i class="pi pi-plus"></i>
+        Dodaj restaurację
+      </button>
+    </div>
+  </header>
 
-  <h2>Lista restauracji:</h2>
-  <div>
+  <div class="restaurants-list" *ngIf="restauracje.length > 0">
+    <article *ngFor="let restaurant of restauracje" class="restaurant-card">
+      
+      <div class="card-image" *ngIf="getMainImage(restaurant) as img">
+        <img [src]="'data:' + img.typ + ';base64,' + img.obrazBase64" [alt]="restaurant.nazwa" />
+      </div>
+      <div class="card-image card-placeholder" *ngIf="!getMainImage(restaurant)">
+        <i class="pi pi-image"></i>
+      </div>
 
-    <button pButton icon="pi pi-search" label="Szukaj restauracji" (click)="getRestaurant()">
-    </button>
-
-    <button pButton icon="pi pi-plus" label="Dodaj restauracje" (click)="addingDialog = true">
-    </button>
-
-  </div>
-  <ul>
-    <li *ngFor="let restaurant of restauracje" class="restaurant-card">
-      <div class="restaurants-list">
-
-        <div class="restaurant-header">
-          <h3>{{ restaurant.nazwa }}</h3>
-        </div>
-
-        <div class="restaurant-details">
-          <p class="address">
+      <div class="card-body">
+        <h3 class="card-title">{{ restaurant.nazwa }}</h3>
+        
+        <div class="card-info">
+          <div class="info-item">
             <i class="pi pi-map-marker"></i>
-            {{ restaurant.adres }}
-          </p>
-
-          <p class="phone" *ngIf="restaurant.nr_kontaktowy">
+            <span>{{ restaurant.adres }}</span>
+          </div>
+          <div class="info-item" *ngIf="restaurant.nr_kontaktowy">
             <i class="pi pi-phone"></i>
-            {{ restaurant.nr_kontaktowy }}
-          </p>
-
-          <p class="email" *ngIf="restaurant.email">
+            <span>{{ restaurant.nr_kontaktowy }}</span>
+          </div>
+          <div class="info-item" *ngIf="restaurant.email">
             <i class="pi pi-envelope"></i>
-            {{ restaurant.email }}
-          </p>
-
-          <div class="image" *ngIf="getMainImage(restaurant) as img">
-            <img
-              [src]="'data:' + img.typ + ';base64,' + img.obrazBase64"
-              [alt]="restaurant.nazwa"
-              class="restaurant-image"
-            >
+            <span>{{ restaurant.email }}</span>
           </div>
-
-          <div class="restaurant-actions">
-            <button pButton icon="pi pi-pencil" label="Edytuj"
-                    class="p-button-sm p-button-warning"
-                    (click)="openEditDialog(restaurant)">
-            </button>
-          </div>
-
         </div>
 
-        <strong>{{ restaurant.nazwa }}</strong> - {{ restaurant.adres }}
+        <div class="card-actions">
+          <button pButton class="btn-edit" (click)="openEditDialog(restaurant)">
+            <i class="pi pi-pencil"></i>
+            Edytuj
+          </button>
+        </div>
       </div>
-    </li>
-  </ul>
+    </article>
+  </div>
 
+  <div *ngIf="restauracje.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="pi pi-building"></i>
+    </div>
+    <h3>Brak restauracji</h3>
+    <p>Dodaj pierwszą restaurację, aby rozpocząć</p>
+    <button pButton class="btn-primary" (click)="addingDialog = true">
+      <i class="pi pi-plus"></i>
+      Dodaj restaurację
+    </button>
+  </div>
+</div>
 
-  <p-dialog [(visible)]="addingDialog" [header]="'Dodawanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
+<!-- Dialog dodawania -->
+<p-dialog [(visible)]="addingDialog" [header]="'Nowa restauracja'" [modal]="true" [styleClass]="'admin-dialog'">
   <ng-template pTemplate="content">
-    <div class="field">
-      <h4>Dane restauracji</h4>
-      <div class="field">
-        <label for="name">Nazwa</label>
-        <input type="text" pInputText id="name" [(ngModel)]="newRestaurant.nazwa" name="name" />
+    <div class="dialog-form">
+      <div class="form-field">
+        <label>Nazwa restauracji</label>
+        <input type="text" pInputText [(ngModel)]="newRestaurant.nazwa" placeholder="Nazwa" />
       </div>
-      <div class="field">
+      <div class="form-field">
         <label>Adres</label>
-        <input type="text" pInputText [(ngModel)]="newRestaurant.adres" name="address" />
+        <input type="text" pInputText [(ngModel)]="newRestaurant.adres" placeholder="ul. Przykładowa 1, Warszawa" />
       </div>
-      <div class="field">
-        <label>Nr kontaktowy</label>
-        <input type="number" pInputNumber [(ngModel)]="newRestaurant.nr_kontaktowy" name="kontaktowy" />
+      <div class="form-row">
+        <div class="form-field">
+          <label>Telefon</label>
+          <input type="text" pInputText [(ngModel)]="newRestaurant.nr_kontaktowy" placeholder="123 456 789" />
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" pInputText [(ngModel)]="newRestaurant.email" placeholder="kontakt@restauracja.pl" />
+        </div>
       </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="text" pInputText [(ngModel)]="newRestaurant.email" name="email" />
+      <div class="form-field">
+        <label>Zdjęcia</label>
+        <p-fileUpload 
+          name="images[]" 
+          mode="advanced"
+          [multiple]="true" 
+          accept="image/*" 
+          [maxFileSize]="5000000"
+          [showUploadButton]="false" 
+          [showCancelButton]="true"
+          chooseLabel="Wybierz zdjęcia"
+          cancelLabel="Wyczyść"
+          (onSelect)="onNewFilesSelected($event)">
+        </p-fileUpload>
       </div>
     </div>
   </ng-template>
   <ng-template pTemplate="footer">
-    <button pButton label="Anuluj" (click)="addingDialog = false"></button>
-    <button pButton label="Zapisz" (click)="saveRestaurant()"></button>
+    <button pButton label="Anuluj" class="btn-secondary" (click)="addingDialog = false"></button>
+    <button pButton label="Zapisz" class="btn-primary" (click)="saveRestaurant()"></button>
   </ng-template>
 </p-dialog>
 
-<p-dialog [(visible)]="editingDialog" [header]="'Edytowanie restauracji'" [modal]="true" [styleClass]="'my-dialog'">
+<!-- Dialog edycji -->
+<p-dialog [(visible)]="editingDialog" [header]="'Edytuj restaurację'" [modal]="true" [styleClass]="'admin-dialog'">
   <ng-template pTemplate="content">
-    <div class="field">
-      <h4>Edytuj dane restauracji</h4>
-
-      <div class="field">
-        <label>Nazwa</label>
+    <div class="dialog-form">
+      <div class="form-field">
+        <label>Nazwa restauracji</label>
         <input type="text" pInputText [(ngModel)]="editedRestaurant.nazwa" />
       </div>
-
-      <div class="field">
+      <div class="form-field">
         <label>Adres</label>
         <input type="text" pInputText [(ngModel)]="editedRestaurant.adres" />
       </div>
-
-      <div class="field">
-        <label>Nr kontaktowy</label>
-        <input type="number" pInputNumber [(ngModel)]="editedRestaurant.nr_kontaktowy" />
-      </div>
-
-      <div class="field">
-        <label>Email</label>
-        <input type="text" pInputText [(ngModel)]="editedRestaurant.email" />
+      <div class="form-row">
+        <div class="form-field">
+          <label>Telefon</label>
+          <input type="text" pInputText [(ngModel)]="editedRestaurant.nr_kontaktowy" />
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" pInputText [(ngModel)]="editedRestaurant.email" />
+        </div>
       </div>
     </div>
   </ng-template>
-
   <ng-template pTemplate="footer">
-    <button pButton label="Anuluj" (click)="editingDialog = false"></button>
-    <button pButton label="Zapisz" (click)="updateRestaurant()"></button>
+    <button pButton label="Anuluj" class="btn-secondary" (click)="editingDialog = false"></button>
+    <button pButton label="Zapisz zmiany" class="btn-primary" (click)="updateRestaurant()"></button>
   </ng-template>
 </p-dialog>
 
+<!-- Dialog układu sali -->
 <app-reservation-dialog
   [(visible)]="floorPlanDialogVisible"
   [restaurantName]="currentRestaurantForLayout?.nazwa || ''"
   [isEditable]="true"
   (layoutSaved)="onLayoutSaved($event)">
 </app-reservation-dialog>
-</div>

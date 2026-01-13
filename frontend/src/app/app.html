@@ -1,21 +1,49 @@
-<main class="main">
-  <div class="menu">
-    <ng-container *ngFor="let btn of buttons">
-      <button *ngIf="canShowButton(btn)"
-              pButton
-              type="button"
-              [label]="btn.label"
-              [icon]="btn.icon"
-              (click)="openLink(btn)">
+<main class="app-layout">
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a class="navbar-brand" (click)="openLink({link: '/'})">
+        <span class="brand-text">table4you.pl</span>
+      </a>
+
+      <div class="navbar-menu">
+        <ng-container *ngFor="let btn of buttons">
+          <button *ngIf="canShowButton(btn)"
+                  pButton
+                  type="button"
+                  [class]="btn.action === 'logout' ? 'nav-btn nav-btn-outline' : 'nav-btn'"
+                  (click)="openLink(btn)">
+            <i [class]="btn.icon"></i>
+            <span>{{ btn.label }}</span>
+          </button>
+        </ng-container>
+      </div>
+
+      <button class="mobile-toggle" (click)="mobileMenuOpen = !mobileMenuOpen">
+        <i [class]="mobileMenuOpen ? 'pi pi-times' : 'pi pi-bars'"></i>
       </button>
-    </ng-container>
-  </div>
-  <div class="header">
+    </div>
 
-  </div>
-  
+    <div class="mobile-menu" [class.open]="mobileMenuOpen">
+      <ng-container *ngFor="let btn of buttons">
+        <button *ngIf="canShowButton(btn)"
+                pButton
+                type="button"
+                class="mobile-nav-btn"
+                (click)="openLink(btn); mobileMenuOpen = false">
+          <i [class]="btn.icon"></i>
+          <span>{{ btn.label }}</span>
+        </button>
+      </ng-container>
+    </div>
+  </nav>
 
-  <div class="content">
+  <header class="hero-header"></header>
+
+  <div class="content-wrapper">
     <router-outlet></router-outlet>
   </div>
+
+  <footer class="app-footer">
+    <p>© 2026 table4you.pl · Wszelkie prawa zastrzeżone</p>
+  </footer>
 </main>
