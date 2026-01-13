@@ -15,6 +15,14 @@ import {
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
 import { Stolik } from '../stolik/stolik.entity';
 
+// Interface dla tworzenia stolików
+interface CreateStolikDto {
+  id: number;
+  seats: number;
+  top: number;
+  left: number;
+}
+
 @Injectable()
 export class RestauracjaService {
   constructor(
@@ -22,30 +30,47 @@ export class RestauracjaService {
     private readonly restauracjaRepository: Repository<Restauracja>,
     @InjectRepository(RestauracjaObraz)
     private readonly obrazRepository: Repository<RestauracjaObraz>,
+    @InjectRepository(Stolik)  // <-- DODANE
+    private readonly stolikRepository: Repository<Stolik>,
     private readonly dataSource: DataSource,
   ) {}
 
   async create(
     createRestauracjaDto: CreateRestauracjaDto,
+    images?: Express.Multer.File[],
   ): Promise<Restauracja> {
-    //metoda tworząca nową restaurację
     const restauracja = this.restauracjaRepository.create({
       nazwa: createRestauracjaDto.nazwa,
       adres: createRestauracjaDto.adres,
       nr_kontaktowy: createRestauracjaDto.nr_kontaktowy,
       email: createRestauracjaDto.email,
       wlasciciele: createRestauracjaDto.wlasciciele || [],
-    }); //tworzenie nowej instancji restauracji na podstawie DTO
+    });
 
-    return await this.restauracjaRepository.save(restauracja); //zapisanie nowej restauracji w bazie danych
-    // const saved = await this.restauracjaRepository.save(restauracja);
+    const saved = await this.restauracjaRepository.save(restauracja);
 
-    // const reloaded = await this.restauracjaRepository.findOne({
-    //   where: { restauracja_id: saved.restauracja_id },
-    //   relations: ['obrazy'],
-    // });
+    // Zapisz zdjęcia jeśli przesłano
+    if (images && images.length > 0) {
+      for (let i = 0; i < images.length; i++) {
+        const file = images[i];
+        const obraz = this.obrazRepository.create({
+          restauracja: saved,
+          obraz: file.buffer,
+          typ: file.mimetype,
+          nazwa_pliku: file.originalname,
+          rozmiar: file.size,
+          czy_glowne: i === 0,
+        });
+        await this.obrazRepository.save(obraz);
+      }
+    }
 
-    // return this.toApi(reloaded!);
+    const reloaded = await this.restauracjaRepository.findOne({
+      where: { restauracja_id: saved.restauracja_id },
+      relations: ['obrazy'],
+    });
+
+    return reloaded || saved;
   }
 
   save(restauracja: Restauracja): Promise<Restauracja> {
@@ -155,7 +180,6 @@ export class RestauracjaService {
     }
   }
 
-  // Zamieniamy encję na obiekt gotowy dla frontendu (Buffer -> base64)
   private toApi(restauracja: Restauracja) {
     return {
       restauracja_id: restauracja.restauracja_id,
@@ -179,7 +203,6 @@ export class RestauracjaService {
     stoliki: UpdateStolikLayoutDto[],
     userId: number,
   ): Promise<void> {
-    // 1️⃣ Sprawdzenie czy restauracja istnieje i czy user jest właścicielem
     const restauracja = await this.restauracjaRepository.findOne({
       where: { restauracja_id: restauracjaId },
       relations: ['wlasciciele'],
@@ -197,7 +220,6 @@ export class RestauracjaService {
       throw new ForbiddenException('Brak dostępu do edycji layoutu');
     }
 
-    // 2️⃣ Transakcja – layout zapisuje się w całości albo wcale
     await this.dataSource.transaction(async (manager) => {
       for (const stolik of stoliki) {
         const result = await manager.update(
@@ -219,5 +241,55 @@ export class RestauracjaService {
         }
       }
     });
+  }
+
+  // =============================================
+  // NOWA METODA: Zapisywanie całego układu stolików
+  // =============================================
+  async saveTableLayout(
+    restauracjaId: number,
+    stoliki: CreateStolikDto[],
+    userId: number,
+  ): Promise<number> {
+    // 1. Sprawdź czy restauracja istnieje i user ma uprawnienia
+    const restauracja = await this.restauracjaRepository.findOne({
+      where: { restauracja_id: restauracjaId },
+      relations: ['wlasciciele'],
+    });
+
+    if (!restauracja) {
+      throw new NotFoundException('Restauracja nie istnieje');
+    }
+
+    const isOwner = restauracja.wlasciciele.some(
+      (w) => w.uzytkownik_id === userId,
+    );
+
+    if (!isOwner) {
+      throw new ForbiddenException('Brak dostępu do edycji układu');
+    }
+
+    // 2. Usuń istniejące stoliki dla tej restauracji
+    await this.stolikRepository.delete({ restauracja_id: restauracjaId });
+
+    // 3. Utwórz nowe stoliki
+const createdStoliki: Stolik[] = [];
+
+for (const stolikData of stoliki) {
+  const stolik = this.stolikRepository.create({
+    restauracja_id: restauracjaId,
+    numer_stolika: stolikData.id,
+    ilosc_miejsc: stolikData.seats, // Zmieniono z liczba_miejsc na ilosc_miejsc
+    lokalizacja: 'Sala główna',     // DODANO: wymagane pole z encji
+    pozycjaX_UI: stolikData.left,
+    pozycjaY_UI: stolikData.top,
+    // Usunięto pole status, bo nie istnieje w encji Stolik
+  });
+  createdStoliki.push(stolik);
+}
+
+    await this.stolikRepository.save(createdStoliki);
+
+    return createdStoliki.length;
   }
 }

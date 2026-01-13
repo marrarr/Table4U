@@ -5,23 +5,31 @@ import { Restauracja } from '../models/restauracja.model';
 import { CreateRestauracjaDto } from '../models/restauracja.model';
 import { firstValueFrom } from 'rxjs';
 
+// Interface dla stolika
+interface CreateStolikDto {
+  id: number;
+  seats: number;
+  top: number;
+  left: number;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class RestauracjaService {
-  private apiUrl = 'http://localhost:3000/restauracja';                            //adres endpointu API do zarządzania restauracjami
+  private apiUrl = 'http://localhost:3000/restauracja';
 
   constructor(private http: HttpClient) {}
 
-  getAllRestaurants(): Promise<Restauracja[]> {                                     //metoda pobierająca listę wszystkich restauracji
+  getAllRestaurants(): Promise<Restauracja[]> {
     return firstValueFrom(this.http.get<Restauracja[]>(this.apiUrl));
   }
 
-  createRestaurant(data: CreateRestauracjaDto): Promise<Restauracja> {
+  createRestaurant(data: CreateRestauracjaDto | FormData): Promise<Restauracja> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
+      // Nie ustawiaj Content-Type dla FormData - browser zrobi to automatycznie
     });
     return firstValueFrom(this.http.post<Restauracja>(this.apiUrl, data, { headers }));
   }
@@ -32,11 +40,24 @@ export class RestauracjaService {
   }
 
   getMyRestaurants(): Promise<Restauracja[]> {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
     });
 
     return firstValueFrom(this.http.get<Restauracja[]>(`${this.apiUrl}/moje`, { headers }));
+  }
+
+  // NOWA METODA: Zapisywanie układu stolików
+  saveTableLayout(restauracjaId: number, stoliki: CreateStolikDto[]): Promise<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    });
+
+    return firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/${restauracjaId}/stoliki`, stoliki, { headers })
+    );
   }
 }
