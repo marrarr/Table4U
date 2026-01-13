@@ -6,10 +6,11 @@ import { RestauracjaController } from './restauracja.controller';
 import { RestauracjaObrazModule } from './obrazy/restauracjaObraz.module';
 import { UzytkownikModule } from 'src/uzytkownik/uzytkownik.module';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
+import { Stolik } from '../stolik/stolik.entity';  // <-- DODANE
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Restauracja, RestauracjaObraz]),
+    TypeOrmModule.forFeature([Restauracja, RestauracjaObraz, Stolik]),  // <-- DODANE Stolik
     RestauracjaObrazModule,
     UzytkownikModule,
   ],
