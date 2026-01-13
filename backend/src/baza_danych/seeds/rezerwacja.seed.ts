@@ -49,57 +49,40 @@ export async function seedRezerwacje(): Promise<void> {
   const dataRezerwacji2 = asDateOnly(new Date('2026-01-11'));
 
   const planned: Array<{
-    stolik: Stolik;
-    data_rezerwacji: Date;
-    godzina_od: string;
-    godzina_do: string;
-    status: string;
+    stoliki: number[];
+    data: string;
+    godzina: string;
+    liczba_osob: number;
+    imie: string;
+    telefon: string;
+    restauracja_id: number;
   }> = [
     {
-      stolik: stolik1,
-      data_rezerwacji: dataRezerwacji1,
-      godzina_od: '18:00:00',
-      godzina_do: '19:30:00',
-      status: 'NOWA',
+      stoliki: [stolik1.stolik_id],
+      data: '2026-01-10',
+      godzina: '18:00',
+      liczba_osob: 2,
+      imie: 'Adam',
+      telefon: '123456789',
+      restauracja_id: restauracja.restauracja_id,
     },
     {
-      stolik: stolik2,
-      data_rezerwacji: dataRezerwacji2,
-      godzina_od: '20:00:00',
-      godzina_do: '21:00:00',
-      status: 'NOWA',
+      stoliki: [stolik2.stolik_id],
+      data: '2026-01-11',
+      godzina: '20:00',
+      liczba_osob: 4,
+      imie: 'Ewa',
+      telefon: '987654321',
+      restauracja_id: restauracja.restauracja_id,
     },
   ];
 
   for (const p of planned) {
-    const exists = await rezerwacjaRepo.findOne({
-      where: {
-        restauracja_id: restauracja.restauracja_id,
-        stolik_id: p.stolik.stolik_id,
-        data_rezerwacji: p.data_rezerwacji,
-        godzina_od: p.godzina_od,
-      },
-    });
-
-    if (exists) continue;
+    // Możesz dodać warunek exists, jeśli chcesz unikać duplikatów wg nowych pól
 
     const r = rezerwacjaRepo.create({
-      klient_id: klient.uzytkownik_id,
-      pracownik_id: pracownik.uzytkownik_id,
-      stolik_id: p.stolik.stolik_id,
-      restauracja_id: restauracja.restauracja_id,
-      data_utworzenia: new Date(),
-      data_rezerwacji: p.data_rezerwacji,
-      godzina_od: p.godzina_od,
-      godzina_do: p.godzina_do,
-      status: p.status,
-
-      // relacje (pomagają przy eager/lazy + czytelność; DB i tak zapisuje FK kolumny)
-      uzytkownik: klient,
-      stolik: p.stolik,
-      restauracja,
+      ...p
     });
-
     await rezerwacjaRepo.save(r);
   }
 }

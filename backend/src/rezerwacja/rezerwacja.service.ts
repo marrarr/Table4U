@@ -12,7 +12,9 @@ export class RezerwacjaService {
   ) {}
 
   async create(createRezerwacjaDto: CreateRezerwacjaDto): Promise<Rezerwacja> {
-    const rezerwacja = this.rezerwacjaRepository.create(createRezerwacjaDto);
+    const rezerwacja = this.rezerwacjaRepository.create({
+      ...createRezerwacjaDto
+    });
     return await this.rezerwacjaRepository.save(rezerwacja);
   }
 
@@ -31,6 +33,23 @@ export class RezerwacjaService {
       throw new NotFoundException(`Rezerwacja z ID ${id} nie znaleziona`);
     }
     return rezerwacja;
+  }
+
+  // Find reservations for a given restaurant, date, and hour
+  async findOccupied(restauracja_id: number, data: string, godzina: string): Promise<Rezerwacja[]> {
+    // Parse godzina as HH:mm
+    const [h, m] = godzina.split(':').map(Number);
+    const date = new Date(`${data}T${godzina}:00`);
+    const before = new Date(date.getTime() - 60 * 60 * 1000); // -1h
+    const after = new Date(date.getTime() + 60 * 60 * 1000);  // +1h
+    const godzinaStart = before.toTimeString().slice(0,5);
+    const godzinaEnd = after.toTimeString().slice(0,5);
+    // Use queryBuilder for BETWEEN
+    return await this.rezerwacjaRepository.createQueryBuilder('rezerwacja')
+      .where('rezerwacja.restauracja_id = :restauracja_id', { restauracja_id })
+      .andWhere('rezerwacja.data = :data', { data })
+      .andWhere('rezerwacja.godzina BETWEEN :start AND :end', { start: godzinaStart, end: godzinaEnd })
+      .getMany();
   }
 
   async upsert(id: number, updateRezerwacjaDto: UpdateRezerwacjaDto): Promise<Rezerwacja> {

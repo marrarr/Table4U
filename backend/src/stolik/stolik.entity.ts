@@ -32,8 +32,6 @@ export class Stolik {
   })
   lokalizacja: string;
 
-  @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.stolik)
-  rezerwacje: Rezerwacja[];
 
   @Column()
   pozycjaX_UI: number;

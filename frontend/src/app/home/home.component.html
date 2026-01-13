@@ -60,6 +60,7 @@
 <app-reservation-dialog
   [visible]="reservationDialogVisible"
   [restaurantName]="selectedRestaurant?.nazwa || ''"
+  [restauracjaId]="selectedRestaurant?.restauracja_id || 0"
   (visibleChange)="reservationDialogVisible = $event"
   (confirm)="onReservationConfirmed($event)">
 </app-reservation-dialog>

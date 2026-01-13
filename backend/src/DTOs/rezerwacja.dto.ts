@@ -1,12 +1,12 @@
 export interface CreateRezerwacjaDto {
-  uzytkownik_id: number;
-  stolik_id: number;
+  imie: string;
+  telefon: string;
+  liczba_osob: number;
+  stoliki: number[];
+  godzina: string;
+  data: string;
   restauracja_id: number;
-  data_utworzenia: Date;
-  data_rezerwacji: Date;
-  godzina_od: string;
-  godzina_do: string;
-  status: string;
+  uzytkownik_id?: number;
 }
 
 export interface UpdateRezerwacjaDto {

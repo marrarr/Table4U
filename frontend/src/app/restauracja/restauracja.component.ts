@@ -173,8 +173,6 @@ export class RestauracjaComponent implements OnInit {
   }
 
   onLayoutSaved(newTables: Table[]) {
-    console.log('Zapisano nowy układ dla restauracji:', this.currentRestaurantForLayout?.nazwa);
-    console.log('Nowe współrzędne stolików:', newTables);
 
     // TODO: Wywołaj serwis zapisujący układ w bazie, np.:
     // this.restauracjaService.saveTableLayout(this.currentRestaurantForLayout.restauracja_id, newTables);

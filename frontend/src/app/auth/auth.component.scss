@@ -1,3 +1,4 @@
+@use "sass:color";
 // === VARIABLES ===
 $primary: #5c4033;
 $primary-dark: #3d2a22;
@@ -197,7 +198,7 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transition: $transition;
 
     &:hover {
-      color: darken($accent, 10%);
+      color: color.adjust($accent, $lightness: -10%);
       text-decoration: underline;
     }
   }

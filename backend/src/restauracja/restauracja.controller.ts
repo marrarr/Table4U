@@ -26,8 +26,10 @@ export class RestauracjaController {
     @Body() createRestauracjaDto: CreateRestauracjaDto,
     @Request() req,
   ): Promise<Restauracja> {
+    if (!createRestauracjaDto) throw new Error('Brak danych restauracji!');
     const username = req.user.username;
     const user = await this.uzytkownikService.findOneByUsername(username);
+    // Always set the owner to the current user, ignore any sent from frontend
     createRestauracjaDto.wlasciciele = [user];
     return this.restauracjaService.create(createRestauracjaDto);
   }

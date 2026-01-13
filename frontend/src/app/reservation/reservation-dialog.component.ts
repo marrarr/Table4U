@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 
 // Angular CDK
 import { DragDropModule, CdkDragEnd } from '@angular/cdk/drag-drop';
+import { ReservationService } from './reservation.service';
 
 export interface Table {
   id: number;
@@ -33,12 +34,15 @@ export interface Table {
     DragDropModule 
   ],
   templateUrl: './reservation-dialog.component.html',
-  styleUrls: ['./reservation-dialog.component.scss']
+  styleUrls: ['./reservation-dialog.component.scss'],
+  providers: [ReservationService],
 })
 export class ReservationDialogComponent implements OnInit {
   @Input() visible: boolean = false;
   @Input() restaurantName: string = '';
   @Input() isEditable: boolean = false; // Tryb edycji dla właściciela
+  @Input() reservedTableIds: number[] = [];
+  @Input() restauracjaId: number = 0;
 
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() layoutSaved = new EventEmitter<Table[]>();
@@ -74,18 +78,54 @@ export class ReservationDialogComponent implements OnInit {
     godzina: new Date()
   };
 
+  loadingReserved = false;
+
+  constructor(private reservationService: ReservationService) {}
+
   ngOnInit(): void {
-    const occupied = ReservationDialogComponent.permanentlyOccupied || [];
-    this.tables.forEach(table => {
-      if (occupied.includes(table.id)) {
-        table.reserved = true;
-        table.permanentlyReserved = true;
-      } else {
+    this.fetchAndBlockReservedTables();
+  }
+
+  async fetchAndBlockReservedTables() {
+    if (!this.restauracjaId || !this.formData.data || !this.formData.godzina) {
+      return;
+    }
+    this.loadingReserved = true;
+    const dataStr = this.formatDate(this.formData.data);
+    const godzinaStr = this.formatTime(this.formData.godzina);
+    try {
+      const reservations = await this.reservationService.getOccupied(
+        this.restauracjaId,
+        dataStr,
+        godzinaStr
+      );
+      const reservedIds = reservations.flatMap(r => r.stoliki);
+      this.tables.forEach(table => {
+        if (reservedIds.includes(table.id)) {
+          table.reserved = true;
+          table.permanentlyReserved = true;
+          // Remove from selected if just became reserved
+          this.selectedTables = this.selectedTables.filter(t => t.id !== table.id);
+        } else {
+          table.reserved = false;
+          table.permanentlyReserved = false;
+        }
+      });
+    } catch (err) {
+      console.error('[DEBUG] Błąd pobierania rezerwacji:', err);
+      this.tables.forEach(table => {
         table.reserved = false;
         table.permanentlyReserved = false;
-      }
-    });
-    ReservationDialogComponent.permanentlyOccupied = [];
+      });
+    }
+    this.loadingReserved = false;
+  }
+
+  formatDate(date: Date): string {
+    return date.toISOString().slice(0, 10);
+  }
+  formatTime(date: Date): string {
+    return date.toTimeString().slice(0, 5);
   }
 
   // --- LOGIKA DRAG & DROP (POPRAWIONA) ---
@@ -203,5 +243,13 @@ export class ReservationDialogComponent implements OnInit {
     const angle = (index * 360) / seats;
     const radius = seats <= 4 ? 68 : 76;
     return `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px) rotate(-${angle}deg)`;
+  }
+
+  // Add listeners for date/hour change
+  onDateChange() {
+    this.fetchAndBlockReservedTables();
+  }
+  onHourChange() {
+    this.fetchAndBlockReservedTables();
   }
 }

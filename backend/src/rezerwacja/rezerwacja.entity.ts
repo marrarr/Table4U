@@ -14,44 +14,41 @@ export class Rezerwacja {
   @PrimaryGeneratedColumn()
   rezerwacja_id: number;
 
-  @Column()
-  klient_id: number;
+  @Column({ type: 'varchar', length: 100 })
+  imie: string;
 
-  @Column()
-  pracownik_id: number;
+  @Column({ type: 'varchar', length: 20 })
+  telefon: string;
 
-  @Column()
-  stolik_id: number;
+  @Column({ type: 'int' })
+  liczba_osob: number;
 
-  @Column()
-  restauracja_id: number;
+  @Column({ type: 'simple-json' })
+  stoliki: number[];
 
-  @Column({ type: 'datetime' })
-  data_utworzenia: Date;
+  @Column({ type: 'varchar', length: 10 })
+  godzina: string;
 
   @Column({ type: 'date' })
-  data_rezerwacji: Date;
+  data: string;
 
-  @Column({ type: 'time' })
-  godzina_od: string;
+  @Column({ type: 'int' })
+  restauracja_id: number;
 
-  @Column({ type: 'time' })
-  godzina_do: string;
-
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 50, default: 'NOWA' })
   status: string;
 
-  // Relacje z innymi tabelami
 
+    @Column({ type: 'int', nullable: true })
+    uzytkownik_id: number;
+  // Relacje z innymi tabelami
   @ManyToOne(() => Uzytkownik)
   @JoinColumn({ name: 'uzytkownik_id' })
   uzytkownik: Uzytkownik;
 
-  @ManyToOne(() => Stolik)
-  @JoinColumn({ name: 'stolik_id' })
-  stolik: Stolik;
 
   @ManyToOne(() => Restauracja)
   @JoinColumn({ name: 'restauracja_id' })
   restauracja: Restauracja;
+
 }

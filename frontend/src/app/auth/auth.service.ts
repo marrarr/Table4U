@@ -48,6 +48,9 @@ export class AuthService {
       try {
         const decoded: any = jwtDecode(res.access_token);
         role = decoded.role;
+        if (decoded.uzytkownik_id) {
+          localStorage.setItem('uzytkownik_id', decoded.uzytkownik_id.toString());
+        }
       } catch {
         role = null;
       }

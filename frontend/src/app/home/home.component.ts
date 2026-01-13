@@ -9,16 +9,8 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RestauracjaService } from '../restauracja/restauracja.service';
 import { Restauracja } from '../models/restauracja.model';
 import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
-
-interface CreateRezerwacjaDto {
-  restauracja_id: number;
-  data: string;          // YYYY-MM-DD
-  godzina: string;       // HH:MM
-  stoliki: number[];
-  liczba_osob: number;
-  imie: string;
-  telefon: string;
-}
+import { CreateRezerwacjaDto } from '../models/rezerwacja.model';
+import { ReservationService } from '../reservation/reservation.service';
 
 @Component({
   selector: 'app-home',
@@ -31,7 +23,7 @@ interface CreateRezerwacjaDto {
     HttpClientModule,
     ReservationDialogComponent
   ],
-  providers: [MessageService, RestauracjaService],
+  providers: [MessageService, RestauracjaService, ReservationService],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
@@ -42,11 +34,13 @@ export class HomeComponent implements OnInit {
   selectedRestaurant: Restauracja | null = null;
 
   private occupiedTables = new Map<number, Set<number>>();
+  occupiedTableIds: number[] = [];
 
   constructor(
     private restauracjaService: RestauracjaService,
     private messageService: MessageService,
-    private http: HttpClient
+    private http: HttpClient,
+    private reservationService: ReservationService
   ) {}
 
   ngOnInit(): void {
@@ -71,15 +65,25 @@ export class HomeComponent implements OnInit {
       });
   }
 
-  openReservationDialog(restauracja: Restauracja) {
+  async openReservationDialog(restauracja: Restauracja) {
     this.selectedRestaurant = restauracja;
-
-    const occupiedInThisRestaurant =
-      this.occupiedTables.get(restauracja.restauracja_id!) || new Set<number>();
-
-    (ReservationDialogComponent as any).permanentlyOccupied =
-      Array.from(occupiedInThisRestaurant);
-
+    // Assume current date and hour for initial fetch
+    const today = new Date();
+    const dataStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+    const godzinaStr = today.toTimeString().slice(0, 5); // HH:MM
+    try {
+      const reservations = await this.reservationService.getOccupied(
+        restauracja.restauracja_id!,
+        dataStr,
+        godzinaStr
+      );
+      // Collect all reserved table IDs
+      this.occupiedTableIds = reservations.flatMap(r => r.stoliki);
+    } catch (err) {
+      this.occupiedTableIds = [];
+    }
+    (ReservationDialogComponent as any).permanentlyOccupied = this.occupiedTableIds;
+    // Pass restauracjaId to dialog
     this.reservationDialogVisible = true;
   }
 
@@ -108,6 +112,7 @@ export class HomeComponent implements OnInit {
     const dataStr = form.data.toISOString().slice(0, 10); // YYYY-MM-DD
     const godzinaStr = form.godzina.toTimeString().slice(0, 5); // HH:MM
 
+    const uzytkownikId = Number(localStorage.getItem('uzytkownik_id')) || undefined;
     const payload: CreateRezerwacjaDto = {
       restauracja_id: restauracjaId,
       data: dataStr,
@@ -115,9 +120,9 @@ export class HomeComponent implements OnInit {
       stoliki: tableIds,
       liczba_osob: totalSeats,
       imie: form.imie.trim(),
-      telefon: form.telefon.trim()
+      telefon: form.telefon.trim(),
+      uzytkownik_id: uzytkownikId
     };
-
     this.http.post('http://localhost:3000/rezerwacja', payload).subscribe({
       next: () => {
         // Sukces – blokujemy stoliki lokalnie

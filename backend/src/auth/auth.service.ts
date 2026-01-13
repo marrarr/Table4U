@@ -9,13 +9,12 @@ export class AuthService {
     constructor(private users: UzytkownikService, private jwt: JwtService) { }
 
     async register(createUzytkownikDto: CreateUzytkownikDto) {
-        console.log(createUzytkownikDto)
         let uzytkownik;
         try {
             uzytkownik = await this.users.create(createUzytkownikDto)
         }
         catch (error) {
-            console.log(error)
+            console.error(error)
         }
         
         return { username: uzytkownik.login };

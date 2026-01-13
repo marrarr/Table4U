@@ -116,7 +116,8 @@
                   placeholder="Data"
                   styleClass="full-width-calendar"
                   [inputStyle]="{'width': '100%'}"
-                  appendTo="body">
+                  appendTo="body"
+                  (onSelect)="onDateChange()">
                 </p-datepicker>
               </div>
 
@@ -131,7 +132,8 @@
                   placeholder="Godzina"
                   styleClass="full-width-calendar"
                   [inputStyle]="{'width': '100%'}"
-                  appendTo="body">
+                  appendTo="body"
+                  (onSelect)="onHourChange()">
                 </p-datepicker>
               </div>
             </div>

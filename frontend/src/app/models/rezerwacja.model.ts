@@ -7,4 +7,5 @@ export interface CreateRezerwacjaDto {
   liczba_osob: number;
   imie: string;
   telefon: string;
+  uzytkownik_id?: number;
 }
