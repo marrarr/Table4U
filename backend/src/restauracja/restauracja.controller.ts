@@ -4,6 +4,7 @@ import type {
   CreateRestauracjaDto,
   RestauracjaApiDto,
   UpdateRestauracjaDto,
+  UpdateStolikLayoutDto,
 } from '../DTOs/restauracja.dto';
 import { Restauracja } from './restauracja.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -60,5 +61,22 @@ export class RestauracjaController {
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.restauracjaService.remove(+id); //metoda usuwająca restaurację na podstawie jej ID
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('owner', 'admin')
+  @Put(':id/layout')
+  async updateLayout(
+    @Param('id') restauracjaId: string,
+    @Body() stoliki: UpdateStolikLayoutDto[],
+    @Request() req,
+  ): Promise<void> {
+    const userId = req.user.id;
+
+    return await this.restauracjaService.updateLayout(
+      +restauracjaId,
+      stoliki,
+      userId,
+    );
   }
 }

@@ -1,9 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Restauracja } from './restauracja.entity';
-import { CreateRestauracjaDto, type RestauracjaApiDto, UpdateRestauracjaDto } from '../DTOs/restauracja.dto';
+import {
+  CreateRestauracjaDto,
+  type RestauracjaApiDto,
+  UpdateRestauracjaDto,
+  UpdateStolikLayoutDto,
+} from '../DTOs/restauracja.dto';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
+import { Stolik } from '../stolik/stolik.entity';
 
 @Injectable()
 export class RestauracjaService {
@@ -12,6 +22,7 @@ export class RestauracjaService {
     private readonly restauracjaRepository: Repository<Restauracja>,
     @InjectRepository(RestauracjaObraz)
     private readonly obrazRepository: Repository<RestauracjaObraz>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
@@ -161,5 +172,52 @@ export class RestauracjaService {
         obrazBase64: o.obraz ? o.obraz.toString('base64') : undefined,
       })),
     };
+  }
+
+  async updateLayout(
+    restauracjaId: number,
+    stoliki: UpdateStolikLayoutDto[],
+    userId: number,
+  ): Promise<void> {
+    // 1️⃣ Sprawdzenie czy restauracja istnieje i czy user jest właścicielem
+    const restauracja = await this.restauracjaRepository.findOne({
+      where: { restauracja_id: restauracjaId },
+      relations: ['wlasciciele'],
+    });
+
+    if (!restauracja) {
+      throw new NotFoundException('Restauracja nie istnieje');
+    }
+
+    const isOwner = restauracja.wlasciciele.some(
+      (w) => w.uzytkownik_id === userId,
+    );
+
+    if (!isOwner) {
+      throw new ForbiddenException('Brak dostępu do edycji layoutu');
+    }
+
+    // 2️⃣ Transakcja – layout zapisuje się w całości albo wcale
+    await this.dataSource.transaction(async (manager) => {
+      for (const stolik of stoliki) {
+        const result = await manager.update(
+          Stolik,
+          {
+            stolik_id: stolik.stolik_id,
+            restauracja_id: restauracjaId,
+          },
+          {
+            pozycjaX_UI: stolik.pozycjaX_UI,
+            pozycjaY_UI: stolik.pozycjaY_UI,
+          },
+        );
+
+        if (result.affected === 0) {
+          throw new NotFoundException(
+            `Stolik ${stolik.stolik_id} nie należy do tej restauracji`,
+          );
+        }
+      }
+    });
   }
 }

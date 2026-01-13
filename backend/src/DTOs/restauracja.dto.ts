@@ -43,3 +43,10 @@ export interface RestauracjaApiDto {
     obrazBase64?: string;
   }[];
 }
+
+export interface UpdateStolikLayoutDto {
+  stolik_id: number;
+  pozycjaX_UI: number;
+  pozycjaY_UI: number;
+}
+

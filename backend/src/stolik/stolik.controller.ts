@@ -23,15 +23,21 @@ export class StolikiController {
   }
 
   @Put(':id')
-  upsert(
+  update(
     @Param('id') id: string,
     @Body() updateStolikDto: UpdateStolikDto,
   ): Promise<Stolik> {
-    return this.stolikiService.upsert(+id, updateStolikDto);
+    return this.stolikiService.update(+id, updateStolikDto);
+    // return this.stolikiService.upsert(+id, updateStolikDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string): Promise<void> {
     return this.stolikiService.remove(+id);
+  }
+
+  @Get('restauracja/:id')
+  async getStolikiRestauracji(@Param('id') id: number) {
+    return this.stolikiService.getStolikiRestauracji(id);
   }
 }

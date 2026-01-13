@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 't
 import { Rezerwacja } from '../rezerwacja/rezerwacja.entity';
 import { Uzytkownik } from '../uzytkownik/uzytkownik.entity';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
+import { Stolik } from '../stolik/stolik.entity';
 
 @Entity('restauracja')
 export class Restauracja {
@@ -35,9 +36,14 @@ export class Restauracja {
   @OneToMany(() => Rezerwacja, (rezerwacja) => rezerwacja.restauracja)
   rezerwacje: Rezerwacja[];
 
-  @ManyToMany(() => Uzytkownik, uzytkownik => uzytkownik.restauracje, { cascade: true })
+  @ManyToMany(() => Uzytkownik, (uzytkownik) => uzytkownik.restauracje, {
+    cascade: true,
+  })
   wlasciciele: Uzytkownik[];
 
-  @OneToMany(() => RestauracjaObraz, obraz => obraz.restauracja)
+  @OneToMany(() => RestauracjaObraz, (obraz) => obraz.restauracja)
   obrazy: RestauracjaObraz[];
+
+  @OneToMany(() => Stolik, (stolik) => stolik.restauracja)
+  stoliki: Stolik[];
 }

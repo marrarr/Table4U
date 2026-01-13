@@ -53,4 +53,16 @@ export class StolikiService {
       throw new NotFoundException(`Stolik z ID ${id} nie znaleziony`);
     }
   }
+
+  async update(id: number, updateStolikDto: UpdateStolikDto): Promise<Stolik> {
+    const stolik = await this.findOne(id);
+    Object.assign(stolik, updateStolikDto);
+    return this.stolikRepository.save(stolik);
+  }
+
+  async getStolikiRestauracji(restauracjaId: number) {
+    return this.stolikRepository.find({
+      where: { restauracja_id: restauracjaId },
+    });
+  }
 }
