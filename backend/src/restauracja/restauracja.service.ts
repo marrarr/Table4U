@@ -51,23 +51,21 @@ export class RestauracjaService {
 
     // Zapisz zdjęcia jeśli przesłano
     if (images && images.length > 0) {
-      for (let i = 0; i < images.length; i++) {
-        const file = images[i];
-        const obraz = this.obrazRepository.create({
-          restauracja: saved,
-          obraz: file.buffer,
-          typ: file.mimetype,
-          nazwa_pliku: file.originalname,
-          rozmiar: file.size,
-          czy_glowne: i === 0,
-        });
-        await this.obrazRepository.save(obraz);
-      }
+      const file = images[0];
+      const obraz = this.obrazRepository.create({
+        restauracja: saved,
+        obraz: file.buffer,
+        typ: file.mimetype,
+        nazwa_pliku: file.originalname,
+        rozmiar: file.size,
+        czy_glowne: true,
+      });
+      await this.obrazRepository.save(obraz);
     }
 
     const reloaded = await this.restauracjaRepository.findOne({
       where: { restauracja_id: saved.restauracja_id },
-      relations: ['obrazy'],
+      relations: ['obraz'],
     });
 
     return reloaded || saved;
@@ -79,7 +77,7 @@ export class RestauracjaService {
 
   async findAll(): Promise<RestauracjaApiDto[]> {
     const list = await this.restauracjaRepository.find({
-      relations: ['obrazy'],
+      relations: ['obraz'],
     });
     return list.map((r) => this.toApi(r));
   }
@@ -90,14 +88,14 @@ export class RestauracjaService {
   }): Promise<RestauracjaApiDto[]> {
     if (user.role === 'admin') {
       const list = await this.restauracjaRepository.find({
-        relations: ['wlasciciele', 'obrazy'],
+        relations: ['wlasciciele', 'obraz'],
       });
       return list.map((r) => this.toApi(r));
     } else if (user.role === 'owner') {
       const list = await this.restauracjaRepository
         .createQueryBuilder('restauracja')
         .leftJoinAndSelect('restauracja.wlasciciele', 'uzytkownik')
-        .leftJoinAndSelect('restauracja.obrazy', 'obrazy')
+        .leftJoinAndSelect('restauracja.obraz', 'obraz')
         .where('uzytkownik.login = :login', { login: user.username })
         .getMany();
 
@@ -109,7 +107,7 @@ export class RestauracjaService {
   async findOne(id: number): Promise<RestauracjaApiDto> {
     const restauracja = await this.restauracjaRepository.findOne({
       where: { restauracja_id: id },
-      relations: ['obrazy'],
+      relations: ['obraz'],
     });
     if (!restauracja)
       throw new NotFoundException(`Restauracja z ID ${id} nie znaleziona`);
@@ -122,7 +120,7 @@ export class RestauracjaService {
   ): Promise<Restauracja> {
     let restauracja = await this.restauracjaRepository.findOne({
       where: { restauracja_id: id },
-      relations: ['obrazy', 'wlasciciele'],
+      relations: ['obraz', 'wlasciciele'],
     });
 
     if (!restauracja) {
@@ -134,7 +132,7 @@ export class RestauracjaService {
 
       restauracja = await this.restauracjaRepository.findOne({
         where: { restauracja_id: saved.restauracja_id },
-        relations: ['obrazy', 'wlasciciele'],
+          relations: ['obraz', 'wlasciciele'],
       });
 
       if (!restauracja) {
@@ -159,7 +157,7 @@ export class RestauracjaService {
 
     const reloaded = await this.restauracjaRepository.findOne({
       where: { restauracja_id: saved.restauracja_id },
-      relations: ['obrazy', 'wlasciciele'],
+        relations: ['obraz', 'wlasciciele'],
     });
 
     if (!reloaded) {
@@ -187,14 +185,18 @@ export class RestauracjaService {
       adres: restauracja.adres,
       nr_kontaktowy: restauracja.nr_kontaktowy,
       email: restauracja.email,
-      obrazy: (restauracja.obrazy ?? []).map((o) => ({
-        id: o.id,
-        nazwa_pliku: o.nazwa_pliku,
-        typ: o.typ,
-        rozmiar: o.rozmiar,
-        czy_glowne: o.czy_glowne,
-        obrazBase64: o.obraz ? o.obraz.toString('base64') : undefined,
-      })),
+      obraz: restauracja.obraz
+        ? {
+            id: restauracja.obraz.id,
+            nazwa_pliku: restauracja.obraz.nazwa_pliku,
+            typ: restauracja.obraz.typ,
+            rozmiar: restauracja.obraz.rozmiar,
+            czy_glowne: restauracja.obraz.czy_glowne,
+            obrazBase64: restauracja.obraz.obraz
+              ? restauracja.obraz.obraz.toString('base64')
+              : undefined,
+          }
+        : null,
     };
   }
 

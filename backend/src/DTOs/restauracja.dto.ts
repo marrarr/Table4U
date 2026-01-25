@@ -15,7 +15,7 @@ export interface CreateRestauracjaDto {
   nr_kontaktowy: string;
   email: string;
   wlasciciele?: Uzytkownik[];
-  obrazy?: RestauracjaObrazDto[];
+  obraz?: RestauracjaObrazDto;
 }
 
 export interface UpdateRestauracjaDto {
@@ -25,7 +25,7 @@ export interface UpdateRestauracjaDto {
   nr_kontaktowy?: string;
   email?: string;
   wlasciciele?: Uzytkownik[];
-  obrazy?: RestauracjaObrazDto[];
+  obraz?: RestauracjaObrazDto;
 }
 
 export interface RestauracjaApiDto {
@@ -34,14 +34,14 @@ export interface RestauracjaApiDto {
   adres: string;
   nr_kontaktowy: string;
   email: string;
-  obrazy: {
+  obraz: {
     id: number;
     nazwa_pliku: string;
     typ: string;
     rozmiar: number;
     czy_glowne: boolean;
     obrazBase64?: string;
-  }[];
+  } | null;
 }
 
 export interface UpdateStolikLayoutDto {

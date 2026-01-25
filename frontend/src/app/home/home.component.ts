@@ -155,7 +155,7 @@ export class HomeComponent implements OnInit {
   }
 
   getMainImage(restauracja: Restauracja) {
-    if (!restauracja.obrazy) return null;
-    return restauracja.obrazy.find(o => o.czy_glowne) || null;
+    if (!restauracja.obraz) return null;
+    return restauracja.obraz;
   }
 }

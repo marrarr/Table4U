@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, ManyToMany } from 'typeorm';
 import { Rezerwacja } from '../rezerwacja/rezerwacja.entity';
 import { Uzytkownik } from '../uzytkownik/uzytkownik.entity';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
@@ -41,8 +41,10 @@ export class Restauracja {
   })
   wlasciciele: Uzytkownik[];
 
-  @OneToMany(() => RestauracjaObraz, (obraz) => obraz.restauracja)
-  obrazy: RestauracjaObraz[];
+  @OneToOne(() => RestauracjaObraz, (obraz) => obraz.restauracja, {
+    cascade: true,
+  })
+  obraz: RestauracjaObraz | null;
 
   @OneToMany(() => Stolik, (stolik) => stolik.restauracja)
   stoliki: Stolik[];

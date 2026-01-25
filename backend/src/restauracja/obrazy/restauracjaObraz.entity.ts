@@ -2,16 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  Index,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Restauracja } from '../restauracja.entity';
 
 @Entity('restauracja_obraz')
-@Index(  // indeks w bazie, który dba o to, żeby restauracja miała tylko jedno główne zdjęcie
-  ['restauracja', 'czy_glowne'],
-  { unique: true, where: 'czy_glowne = true' }
-)
 export class RestauracjaObraz {
     @PrimaryGeneratedColumn()
     id: number;
@@ -36,8 +32,9 @@ export class RestauracjaObraz {
     @Column()
     rozmiar: number;
 
-    @ManyToOne(() => Restauracja, restauracja => restauracja.obrazy, {
-        onDelete: 'CASCADE'
+    @OneToOne(() => Restauracja, restauracja => restauracja.obraz, {
+      onDelete: 'CASCADE'
     })
+    @JoinColumn({ name: 'restauracja_id' })
     restauracja: Restauracja;
 }

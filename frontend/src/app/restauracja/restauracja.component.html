@@ -134,6 +134,23 @@
           <input type="email" pInputText [(ngModel)]="editedRestaurant.email" />
         </div>
       </div>
+      <div class="form-field image-edit">
+        <label>Aktualne zdjęcie</label>
+        <div *ngIf="editedRestaurant.obraz; else noImage">
+          <div class="current-image">
+            <img [src]="'data:' + editedRestaurant.obraz.typ + ';base64,' + editedRestaurant.obraz.obrazBase64" [alt]="editedRestaurant.nazwa" />
+          </div>
+          <div class="image-actions">
+            <input type="file" (change)="onEditFileSelected($event)" />
+            <button pButton class="btn-secondary" (click)="deleteImage(editedRestaurant)">Usuń obraz</button>
+          </div>
+        </div>
+        <ng-template #noImage>
+          <div class="no-image">
+            <input type="file" (change)="onEditFileSelected($event)" />
+          </div>
+        </ng-template>
+      </div>
     </div>
   </ng-template>
   <ng-template pTemplate="footer">

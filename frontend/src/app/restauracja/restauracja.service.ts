@@ -35,7 +35,8 @@ export class RestauracjaService {
   }
 
   updateRestaurant(id: number, data: Partial<Restauracja>): Promise<Restauracja> {
-    data.obrazy = undefined;
+    // Don't send image data when updating basic restauracja fields
+    (data as any).obraz = undefined;
     return firstValueFrom(this.http.put<Restauracja>(`${this.apiUrl}/${id}`, data));
   }
 
@@ -59,5 +60,23 @@ export class RestauracjaService {
     return firstValueFrom(
       this.http.post<any>(`${this.apiUrl}/${restauracjaId}/stoliki`, stoliki, { headers })
     );
+  }
+
+  uploadImage(restauracjaId: number, file: File): Promise<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+    const form = new FormData();
+    form.append('obraz', file);
+    return firstValueFrom(this.http.post<any>(`${this.apiUrl}/${restauracjaId}/obraz`, form, { headers }));
+  }
+
+  deleteImage(restauracjaId: number, obrazId: number): Promise<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+    return firstValueFrom(this.http.delete<any>(`${this.apiUrl}/${restauracjaId}/obraz/${obrazId}`, { headers }));
   }
 }

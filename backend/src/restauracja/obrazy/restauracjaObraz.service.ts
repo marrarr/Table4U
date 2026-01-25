@@ -35,12 +35,28 @@ export class RestauracjaObrazService {
       throw new NotFoundException(`Restauracja o ID ${restauracjaId} nie istnieje`);
     }
 
+    // Jeśli obraz już istnieje dla tej restauracji -> zaktualizuj go
+    const existing = await this.obrazRepository.findOne({ where: { restauracja: restauracja } });
+    if (existing) {
+      await this.obrazRepository.update(existing.id, {
+        obraz: file.buffer,
+        nazwa_pliku: file.originalname,
+        typ: file.mimetype,
+        rozmiar: file.size,
+        czy_glowne: true,
+      });
+      const updated = await this.obrazRepository.findOne({ where: { id: existing.id } });
+      if (!updated) throw new NotFoundException(`Obraz nie został zaktualizowany`);
+      return updated;
+    }
+
     const obraz = this.obrazRepository.create({
       obraz: file.buffer,
       nazwa_pliku: file.originalname,
       typ: file.mimetype,
       rozmiar: file.size,
       restauracja: restauracja,
+      czy_glowne: true,
     });
 
     return await this.obrazRepository.save(obraz);

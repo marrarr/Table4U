@@ -11,7 +11,7 @@ export interface Restauracja {
   adres?: string;
   nr_kontaktowy?: string;
   email?: string;
-  obrazy?: RestauracjaObraz[];
+  obraz?: RestauracjaObraz | null;
 }
 
 export interface RestauracjaObraz {
