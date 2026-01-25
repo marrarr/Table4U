@@ -518,6 +518,7 @@
   gap: 8px;
 }
 
+// Poprawiona sekcja na samym dole pliku
 .table-chip {
   display: flex;
   align-items: center;
@@ -528,15 +529,44 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   transition: all 0.2s;
 
-  &:hover { border-color: #3498db; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15); }
+  &:hover {
+    border-color: #3498db;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15);
+  }
 
-  .chip-content { display: flex; flexDirection: column; margin-right: 8px; line-height: 1.1; }
-  .chip-icon { font-weight: 700; color: #2c3e50; font-size: 0.9rem; }
-  .chip-info { font-size: 0.7rem; color: #95a5a6; }
-  
+  .chip-content {
+    display: flex;
+    flex-direction: column; /* BYŁO: flexDirection */
+    margin-right: 8px;
+    line-height: 1.1;
+  }
+
+  .chip-icon {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 0.9rem;
+  }
+
+  .chip-info {
+    font-size: 0.7rem;
+    color: #95a5a6;
+  }
+
   .chip-remove {
-    background: transparent; border: none; color: #e74c3c; width: 24px; height: 24px;
-    border-radius: 6px; display: flex; alignItems: center; justifyContent: center; cursor: pointer;
-    &:hover { background: #fdeaea; }
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;     /* BYŁO: alignItems */
+    justify-content: center; /* BYŁO: justifyContent */
+    cursor: pointer;
+
+    &:hover {
+      background: #fdeaea;
+    }
   }
 }
