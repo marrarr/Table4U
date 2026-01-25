@@ -1,10 +1,14 @@
+/* --- GŁÓWNY KONTENER --- */
 .reservation-container {
   display: flex;
-  height: 78vh;
+  height: 100%;
   gap: 20px;
   padding: 10px;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
+/* --- LEWA STRONA: SALA RESTAURACYJNA --- */
 .restaurant-hall {
   flex: 1;
   position: relative;
@@ -13,8 +17,13 @@
   overflow: hidden;
   box-shadow: inset 0 0 30px rgba(0,0,0,0.1);
   border: 3px solid #ddd;
+  min-height: 0; /* Fix dla flexboxa */
+
+  /* Obsługa kliknięcia w tło */
+  cursor: default;
 }
 
+/* Elementy dekoracyjne: BAR, OKNA, DRZWI */
 .bar-area {
   position: absolute;
   right: 0;
@@ -23,6 +32,7 @@
   height: 100%;
   background: #34495e;
   border-left: 12px solid #8B4513;
+  pointer-events: none;
 }
 
 .bar-counter {
@@ -66,29 +76,112 @@
   text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
 }
 
+.wall-window, .wall-door {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.wall-window {
+  background: rgba(135, 206, 235, 0.5);
+  border: 1px solid #3498db;
+
+  &.window-top {
+    top: 0;
+    height: 6px;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+  }
+
+  &.window-left {
+    left: 0;
+    width: 6px;
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+  }
+}
+
+.wall-door {
+  background: linear-gradient(to bottom, #8B4513, #A0522D);
+  border: 2px solid #5e2f0d;
+
+  &.door-bottom {
+    bottom: 0;
+    width: 120px;
+    height: 14px;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+
+    .door-mat {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 4px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 2px;
+    }
+  }
+}
+
+/* --- STOLIKI --- */
 .table-wrapper {
   position: absolute;
   width: 140px;
   height: 140px;
   transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease; /* Płynniejsze przejścia */
   cursor: pointer;
+  z-index: 5;
 
-  &.permanently-reserved {
-    opacity: 0.4;
-    filter: grayscale(100%);
-    cursor: not-allowed;
-    pointer-events: none;  // tylko trwale zajęte są nieklikalne
+  /* Tryb edycji */
+  &.draggable-mode {
+    cursor: grab;
+    
+    &:active {
+      cursor: grabbing;
+      z-index: 100 !important;
+    }
+
+    &:hover {
+      transform: translate(-50%, -50%) scale(1.02);
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
   }
 
+  /* Styl wybranego stolika (w obu trybach) */
+  &.table-selected {
+    z-index: 20;
+    
+    .table-top {
+      background: #27ae60 !important;
+      box-shadow: 0 0 20px rgba(39, 174, 96, 0.5);
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+    
+    .chair-seat {
+      background: #2ecc71;
+      border-color: #27ae60;
+    }
+  }
+
+  /* Styl zajętego stolika */
   &.reserved:not(.permanently-reserved) {
     opacity: 0.7;
-    filter: brightness(0.9) drop-shadow(0 0 12px rgba(52, 152, 219, 0.6));
-    // lekkie przyciemnienie + poświata, żeby było widać, że wybrany
+    filter: brightness(0.9) drop-shadow(0 0 8px rgba(52, 152, 219, 0.4));
   }
 
-  &.selectable:hover {
-    transform: translate(-50%, -50%) scale(1.12);
+  &.permanently-reserved {
+    opacity: 0.5;
+    filter: grayscale(100%);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &.selectable:not(.table-selected):hover {
+    transform: translate(-50%, -50%) scale(1.08);
     z-index: 10;
   }
 }
@@ -110,6 +203,7 @@
   font-size: 1.4rem;
   box-shadow: 0 8px 20px rgba(139, 69, 19, 0.5);
   z-index: 3;
+  transition: all 0.3s ease;
 
   &.rect {
     border-radius: 16px;
@@ -120,163 +214,75 @@
 
 .table-number {
   font-weight: 900;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
-/* Zamień tylko ten fragment w reservation-dialog.component.scss */
+.table-info {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(44, 62, 80, 0.9);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 2;
+  pointer-events: none;
+}
 
 .chair-seat {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 30px;
-  height: 30px;
-  background: linear-gradient(135deg, #2c3e50, #34495e);  /* głęboki granat z połyskiem */
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
   border-radius: 8px;
-  box-shadow: 
-    0 4px 12px rgba(0,0,0,0.4),
-    inset 0 2px 4px rgba(255,255,255,0.2);  /* delikatny połysk */
-  border: 2px solid #1a252f;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  border: 1px solid #1a252f;
   transform-origin: center center;
   z-index: 1;
   transition: all 0.3s ease;
 }
 
-/* Dodatkowy efekt przy hoverze na stoliku (opcjonalny, ale ładny) */
-.table-wrapper.selectable:hover .chair-seat {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  box-shadow: 
-    0 6px 16px rgba(52, 152, 219, 0.5),
-    inset 0 2px 4px rgba(255,255,255,0.3);
-  transform: translate(-50%, -50%) scale(1.1);
+/* CDK DRAG Styles */
+.cdk-drag-preview {
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  opacity: 0.95;
+  cursor: grabbing;
 }
+.cdk-drag-placeholder { opacity: 0.2; }
+.cdk-drag-animating { transition: transform 250ms cubic-bezier(0, 0, 0.2, 1); }
 
-.table-info {
-  position: absolute;
-  bottom: -36px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.85);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: bold;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  z-index: 2;
-}
 
-.summary-sidebar {
-  width: 340px;
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  border: 1px solid #eee;
-}
-
-.summary-info p {
-  margin: 8px 0;
-  font-size: 1.1rem;
-}
-
-.selected-tables-list {
-  flex: 1;
-  overflow-y: auto;
-  max-height: 300px;
-}
-
-.selected-table-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.summary-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.reservation-container {
-  display: flex;
-  flex-direction: column;
-  height: 78vh;
-  gap: 12px;
-  padding: 10px;
-}
-
-.summary-top-bar {
-  background: white;
-  padding: 16px 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border: 1px solid #eee;
-}
-
-.summary-top-bar h3 {
-  margin: 0 0 12px 0;
-  color: var(--primary-color);
-}
-
-.selected-tables-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.table-chip {
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* --- PRAWA STRONA: SIDEBAR / PANEL EDYCJI --- */
 .main-content {
   display: flex;
   flex: 1;
   gap: 20px;
   overflow: hidden;
+  min-height: 0;
 }
-
-/* --- Pasek boczny formularza --- */
-/* --- STYL FORMULARZA (reservation-dialog.component.scss) --- */
-
-/* --- SIDEBAR FORMULARZA (Z naprawionym dołem) --- */
 
 .reservation-form-sidebar {
   width: 380px;
   background: #ffffff;
   border-radius: 24px;
-  padding: 32px; /* Padding dookoła całego kontenera */
+  padding: 32px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.08);
   border: 1px solid #f0f2f5;
-  height: 100%; /* Rozciągnij na pełną wysokość okna */
-  
-  /* KLUCZ DO SUKCESU: Flexbox pionowy */
+  height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Ukryj paski przewijania samego kontenera */
+  overflow: hidden;
 }
 
-/* 1. Nagłówek (Zawsze na górze) */
 .sidebar-header {
-  flex-shrink: 0; /* Nie kurcz się */
+  flex-shrink: 0;
   margin-bottom: 24px;
   
   h3 {
@@ -293,372 +299,181 @@
   }
 }
 
-/* 2. Środkowa część (To ona się scrolluje i rozpycha) */
 .form-content {
-  flex: 1; /* Zajmij całe dostępne miejsce między nagłówkiem a stopką */
-  overflow-y: auto; /* Scrolluj tylko ten fragment, jeśli się nie mieści */
-  padding-right: 8px; /* Odstęp od paska przewijania */
-  margin-right: -8px; /* Kompensacja, żeby pasek był przy krawędzi */
-  
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-right: -8px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-bottom: 20px; /* Odstęp od dolnych elementów wewnątrz scrolla */
+  padding-bottom: 20px;
 }
 
-/* Style wewnątrz formularza (bez zmian) */
+/* --- ELEMENTY FORMULARZA (Wspólne) --- */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  label { font-size: 0.8rem; font-weight: 700; color: #7f8c8d; text-transform: uppercase; margin-left: 4px; }
-}
-.form-row { display: flex; gap: 16px; .half-width { flex: 1; min-width: 0; } }
-.input-icon-wrapper { position: relative; width: 100%; i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #b2bec3; z-index: 2; } }
-
-/* Sekcja podsumowania (też wewnątrz scrolla lub pod nim, zależnie od HTML) */
-.selected-tables-summary {
-  margin-top: 10px; /* Mały odstęp od pól formularza */
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e9ecef;
-  flex-shrink: 0; /* Nie zgniataj tego elementu */
-}
-
-/* 3. Stopka z przyciskami (Zawsze na dole) */
-.form-actions {
-  flex-shrink: 0; /* Nie kurcz się */
-  margin-top: auto; /* Wypchnij maksymalnie w dół (opcja zapasowa) */
-  padding-top: 20px;
-  border-top: 1px solid #f0f2f5;
-  
-  display: grid;
-  grid-template-columns: 1fr 1.8fr;
-  gap: 16px;
-  background: white; /* Tło, żeby nie prześwitywało przy scrollowaniu */
-  z-index: 10;
+  label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    margin-left: 4px;
+  }
 }
 
 .form-row {
   display: flex;
-  gap: 15px;
-  
-  .half-width {
-    flex: 1;
-    min-width: 0; // fix dla flexa
-  }
+  gap: 16px;
+  .half-width { flex: 1; min-width: 0; }
 }
 
-// Stylowanie inputów
 .input-icon-wrapper {
   position: relative;
-  
   i {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: #95a5a6;
-    z-index: 1;
-  }
-  
-  input {
-    padding-left: 36px !important;
+    color: #b2bec3;
+    z-index: 2;
   }
 }
 
-// Nadpisanie stylów PrimeNG dla inputów
+.selected-tables-summary {
+  margin-top: 10px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  flex-shrink: 0;
+}
+
+/* --- STOPKA (Przyciski) --- */
+.form-actions {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #f0f2f5;
+  display: grid;
+  grid-template-columns: 1fr 1.8fr;
+  gap: 16px;
+  background: white;
+  z-index: 10;
+}
+
+/* --- STYLE DLA EDYTORA (Tryb Właściciela) --- */
+
+.editor-default-state {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 0;
+  
+  .info-box {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    color: #0d47a1;
+    
+    i { font-size: 1.2rem; margin-top: 2px; }
+    p { margin: 0; font-size: 0.9rem; line-height: 1.4; }
+  }
+}
+
+.editor-selected-state {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+
+  .selected-table-header {
+    padding-bottom: 12px;
+    border-bottom: 2px dashed #ecf0f1;
+    margin-bottom: 8px;
+    
+    h4 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+  }
+
+  .form-divider {
+    height: 1px;
+    background: #ecf0f1;
+    margin: 10px 0;
+  }
+}
+
+.full-width-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- OVERRIDES PRIMENG --- */
 ::ng-deep {
+  // Inputy
   .p-inputtext {
     width: 100%;
     border-radius: 10px;
     padding: 12px 12px;
     border: 1px solid #dfe6e9;
     background: #fdfdfd;
-    transition: all 0.2s;
-    font-size: 0.95rem;
-
-    &:hover {
-      border-color: #b2bec3;
-      background: #fff;
-    }
-
+    
     &:focus {
       border-color: #3498db;
       box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
     }
   }
-
-  // Kalendarz na pełną szerokość
-  .full-width-calendar {
-    width: 100%;
-    .p-datepicker-trigger {
-       border-top-right-radius: 10px;
-       border-bottom-right-radius: 10px;
-    }
-  }
-}
-
-/* --- Sekcja wybranych stolików --- */
-.selected-tables-summary {
-  margin-top: 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e9ecef;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.summary-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-
-  h4 {
-    margin: 0;
-    font-size: 0.95rem;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .badge {
-    background: #3498db;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-  }
-
-  .total-seats {
-    font-size: 0.85rem;
-    color: #7f8c8d;
-    strong { color: #2c3e50; }
-  }
-}
-
-.selected-tables-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-// Nowoczesny "Chip" stolika
-.table-chip {
-  display: flex;
-  align-items: center;
-  background: #ffffff;
-  border: 1px solid #dcdde1;
-  border-radius: 8px;
-  padding: 4px 4px 4px 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: #3498db;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15);
-  }
-
-  .chip-content {
-    display: flex;
-    flex-direction: column;
-    margin-right: 8px;
-    line-height: 1.1;
-  }
-
-  .chip-icon {
-    font-weight: 700;
-    color: #2c3e50;
-    font-size: 0.9rem;
-  }
-
-  .chip-info {
-    font-size: 0.7rem;
-    color: #95a5a6;
-  }
-
-  .chip-remove {
-    background: transparent;
-    border: none;
-    color: #e74c3c;
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-
-    &:hover {
-      background: #fdeaea;
-    }
-    
-    i { font-size: 0.8rem; font-weight: bold; }
-  }
-}
-
-/* --- Dolne przyciski akcji --- */
-.form-actions {
-  margin-top: 25px;
-  display: grid;
-  grid-template-columns: 1fr 2fr; // Anuluj mniejszy, Zatwierdź większy
-  gap: 12px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f2f5;
-}
-
-// Stylowanie przycisków PrimeNG
-::ng-deep {
-  .action-btn-cancel {
-    width: 100%;
-    color: #7f8c8d !important;
-    font-weight: 600;
-    
-    &:hover {
-      background: #f5f6fa !important;
-      color: #2c3e50 !important;
-    }
-  }
-
-  .action-btn-confirm {
-    width: 100%;
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
-    border: none !important;
-    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    transition: transform 0.2s;
-
-    &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(46, 204, 113, 0.5);
-      background: linear-gradient(135deg, #219150 0%, #27ae60 100%) !important;
-    }
-
-    &:disabled {
-      background: #bdc3c7 !important;
-      box-shadow: none;
-      opacity: 0.7;
-    }
-  }
-}
-
-.table-wrapper {
-  // ... istniejące style ...
-
-  // Dodaj styl dla wybranego stolika (zielona poświata)
-  &.table-selected {
-    z-index: 20; // Wyżej niż inne
-    
-    .table-top {
-      background: #27ae60 !important; // Zielony kolor blatu
-      box-shadow: 0 0 15px rgba(39, 174, 96, 0.6);
-      transform: translate(-50%, -50%) scale(1.05);
-    }
-    
-    .chair-seat {
-      background: #2ecc71; // Jaśniejsze krzesła
-      border-color: #27ae60;
-    }
-  }
-}
-
-/* --- CUSTOMOWY NAGŁÓWEK DIALOGU --- */
-
-.custom-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-
-  i {
-    font-size: 1.5rem;
-  }
-}
-
-.header-titles {
-  display: flex;
-  flex-direction: column;
-
-  h2 {
-    margin: 0;
-    font-size: 1.4rem;
-    color: #2c3e50;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-  }
-
-  .subtitle {
-    font-size: 0.85rem;
-    color: #95a5a6;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-  }
-}
-
-/* --- NADPISYWANIE STYLÓW PRIMENG DLA DIALOGU --- */
-/* To sprawi, że cały dialog będzie wyglądał lżej i czyściej */
-
-::ng-deep .custom-reservation-dialog {
   
-  /* Nagłówek okna */
-  .p-dialog-header {
+  // Ikona w inpucie (padding)
+  .input-icon-wrapper input { padding-left: 40px !important; }
+
+  // Kalendarz
+  .full-width-calendar, .full-width-calendar .p-calendar { width: 100%; }
+  
+  // Dialog Header
+  .custom-reservation-dialog .p-dialog-header {
+    border-radius: 20px 20px 0 0;
     padding: 24px 32px 16px 32px;
-    background: #ffffff;
+    background: #fff;
     border-bottom: 1px solid #f0f2f5;
-    border-radius: 20px 20px 0 0 !important;
+  }
+  
+  // Dialog Content
+  .custom-reservation-dialog .p-dialog-content {
+    border-radius: 0 0 20px 20px;
+    padding: 0;
+    overflow-y: hidden !important;
   }
 
-  /* Treść okna */
-  .p-dialog-content {
-    padding: 0; /* Usuwamy padding kontentu, bo mamy własny w .reservation-container */
-    border-radius: 0 0 20px 20px !important;
-    background: #fdfdfd; 
+  // Przyciski akcji
+  .p-button.p-button-secondary.p-button-text {
+    color: #7f8c8d;
+    &:hover { background: #f5f6fa; color: #2c3e50; }
   }
-
-  /* Przycisk zamykania (X) */
-  .p-dialog-header-icons {
-    .p-dialog-header-close {
-      width: 40px;
-      height: 40px;
-      background: #f8f9fa;
-      border-radius: 50%;
-      color: #7f8c8d;
-      transition: all 0.2s;
-
-      &:hover {
-        background: #e74c3c;
-        color: white;
-        transform: rotate(90deg);
-      }
-    }
+  
+  .p-button-success {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    &:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); }
   }
 }
 
-/* --- 1. Stylizacja Nagłówka (Bez psucia reszty) --- */
+/* --- HEADER DIALOGU --- */
 .dialog-header-content {
   display: flex;
   align-items: center;
@@ -674,159 +489,54 @@
   align-items: center;
   justify-content: center;
   
-  i {
-    font-size: 1.4rem;
-    color: #2c3e50;
-  }
+  i { font-size: 1.4rem; color: #2c3e50; }
 }
 
 .header-text {
   display: flex;
   flex-direction: column;
-
-  .restaurant-name {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #2c3e50;
-  }
-
-  .header-subtitle {
-    font-size: 0.8rem;
-    color: #7f8c8d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
+  
+  .restaurant-name { margin: 0; font-size: 1.3rem; font-weight: 700; color: #2c3e50; }
+  .header-subtitle { font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; }
 }
 
-/* --- 2. NAPRAWA SCROLLOWANIA (Kluczowe zmiany) --- */
-
-/* Poprzednio było tu fixed height (np. 78vh), co powodowało scrolla.
-   Teraz ustawiamy to na 100% dostępnego miejsca w oknie dialogowym. */
-.reservation-container {
+/* --- CHIPS --- */
+.summary-header {
   display: flex;
-  flex-direction: column;
-  height: 100%; /* ZMIANA: Wypełnij dostępne miejsce, nie wychodź poza nie */
-  gap: 12px;
-  padding-bottom: 0; 
-  overflow: hidden; /* Zabezpieczenie przed scrollem całego kontenera */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  h4 { margin: 0; font-size: 0.95rem; color: #2c3e50; }
+  .badge { background: #3498db; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 6px; }
+  .total-seats { font-size: 0.85rem; color: #7f8c8d; strong { color: #2c3e50; } }
 }
 
-.main-content {
+.selected-tables-chips {
   display: flex;
-  flex: 1; /* Rozciągnij się na resztę wolnego miejsca */
-  gap: 20px;
-  overflow: hidden; /* Ważne: żeby scrollował się tylko środek, a nie całość */
-  min-height: 0; /* Fix dla Flexboxa, żeby scroll działał wewnątrz dzieci */
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-/* Upewniamy się, że PrimeNG nie dodaje zbędnych pasków */
-::ng-deep .p-dialog-content {
+.table-chip {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: hidden !important; /* Blokujemy główny scrollbar okna */
-}
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dcdde1;
+  border-radius: 8px;
+  padding: 4px 4px 4px 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: all 0.2s;
 
-/* ... wewnątrz pliku reservation-dialog.component.scss ... */
+  &:hover { border-color: #3498db; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15); }
 
-.restaurant-hall {
-  // ... istniejące style sali (position: relative itd.) ...
-
-  /* --- NOWE ELEMENTY: OKNA I DRZWI --- */
-
-  // Wspólny styl bazowy
-  .wall-window, .wall-door {
-    position: absolute;
-    // Kluczowe: elementy są przezroczyste dla myszki
-    pointer-events: none; 
-    // Ustawiamy je "pod" stolikami (stoliki mają zazwyczaj wyższy z-index lub są później w DOM)
-    z-index: 0; 
-    box-shadow: inset 0 1px 4px rgba(0,0,0,0.2);
+  .chip-content { display: flex; flexDirection: column; margin-right: 8px; line-height: 1.1; }
+  .chip-icon { font-weight: 700; color: #2c3e50; font-size: 0.9rem; }
+  .chip-info { font-size: 0.7rem; color: #95a5a6; }
+  
+  .chip-remove {
+    background: transparent; border: none; color: #e74c3c; width: 24px; height: 24px;
+    border-radius: 6px; display: flex; alignItems: center; justifyContent: center; cursor: pointer;
+    &:hover { background: #fdeaea; }
   }
-
-  /* --- OKNA (Niebieskie, cienkie) --- */
-  .wall-window {
-    background: rgba(135, 206, 235, 0.5); // Jasny, półprzezroczysty błękit (sky blue)
-    border: 1px solid #3498db; // Ciemniejsza niebieska ramka
-
-    // Okna na górnej ścianie
-    &.window-top {
-      top: 0;
-      height: 6px; // Bardzo cienkie
-      border-top: none; // Brak ramki przy samej ścianie
-      border-radius: 0 0 4px 4px; // Zaokrąglenie od strony sali
-    }
-
-    // Okna na lewej ścianie
-    &.window-left {
-      left: 0;
-      width: 6px; // Bardzo cienkie
-      border-left: none;
-      border-radius: 0 4px 4px 0;
-    }
-  }
-
-  /* --- DRZWI (Brązowe) --- */
-  .wall-door {
-    background: linear-gradient(to bottom, #8B4513, #A0522D); // Brązowy gradient (sienna)
-    border: 2px solid #5e2f0d; // Ciemnobrązowa futryna
-
-    // Drzwi na dolnej ścianie
-    &.door-bottom {
-      bottom: 0;
-      width: 120px; // Szersze niż okna
-      height: 14px; // Trochę grubsze, żeby wystawały
-      border-bottom: none;
-      border-radius: 4px 4px 0 0; // Zaokrąglenie góry drzwi
-      
-      // Opcjonalny element dekoracyjny (np. próg/wycieraczka)
-      .door-mat {
-        position: absolute;
-        bottom: 100%; // Tuż nad drzwiami (w głąb sali)
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        height: 4px;
-        background: rgba(0,0,0,0.3); // Cień progu
-        border-radius: 2px;
-      }
-    }
-  }
-}
-
-/* Dodaj do pliku scss */
-
-.table-wrapper {
-  // ... istniejące style ...
-
-  /* Styl w trybie edycji */
-  &.draggable-mode {
-    cursor: grab;
-    
-    &:active {
-      cursor: grabbing;
-      z-index: 100 !important; /* Zawsze na wierzchu podczas przesuwania */
-    }
-
-    /* Wyłączamy efekty hovera dla klienta w trybie edycji */
-    &:hover {
-      transform: translate(-50%, -50%) scale(1.05); /* Lekkie powiększenie */
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    }
-  }
-}
-
-/* Kiedy przeciągamy element (klasa dodawana przez Angular CDK) */
-.cdk-drag-preview {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  opacity: 0.9;
-}
-
-.cdk-drag-placeholder {
-  opacity: 0.3;
-}
-
-.cdk-drag-animating {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }

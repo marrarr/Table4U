@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -7,18 +7,25 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber'; // Potrzebne do edycji liczby miejsc
 
 // Angular CDK
 import { DragDropModule, CdkDragEnd } from '@angular/cdk/drag-drop';
-import { ReservationService } from './reservation.service';
 
-export interface Table {
-  id: number;
-  seats: number;
-  top: number;
-  left: number;
-  reserved: boolean;
-  permanentlyReserved?: boolean;
+// Services & Models
+import { ReservationService } from './reservation.service';
+import { Stolik } from '../models/stolik.model'; // Upewnij się, że ten plik istnieje (jak w poprzedniej odpowiedzi)
+
+// Interfejs UI - rozszerza lub mapuje dane z bazy na potrzeby widoku (np. top/left zamiast pozycjaY/X)
+export interface TableUI {
+  id: number;            // Odpowiednik stolik_id
+  seats: number;         // Odpowiednik ilosc_miejsc
+  top: number;           // Odpowiednik pozycjaY_UI
+  left: number;          // Odpowiednik pozycjaX_UI
+  lokalizacja: string;   // Nowe pole do edycji
+  reserved: boolean;     // Status wyliczony na podstawie rezerwacji
+  permanentlyReserved?: boolean; // Status zajętości z bazy
+  originalData?: Stolik; // Referencja do pełnego obiektu z bazy (opcjonalnie)
 }
 
 @Component({
@@ -31,13 +38,14 @@ export interface Table {
     FormsModule, 
     DatePickerModule,
     InputTextModule,
+    InputNumberModule,
     DragDropModule 
   ],
   templateUrl: './reservation-dialog.component.html',
   styleUrls: ['./reservation-dialog.component.scss'],
   providers: [ReservationService],
 })
-export class ReservationDialogComponent implements OnInit {
+export class ReservationDialogComponent implements OnInit, OnChanges {
   @Input() visible: boolean = false;
   @Input() restaurantName: string = '';
   @Input() isEditable: boolean = false; // Tryb edycji dla właściciela
@@ -45,7 +53,8 @@ export class ReservationDialogComponent implements OnInit {
   @Input() restauracjaId: number = 0;
 
   @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() layoutSaved = new EventEmitter<Table[]>();
+  // Emitujemy teraz TableUI[], bo to na nich operuje widok (zmiany lokalne przed zapisem)
+  @Output() layoutSaved = new EventEmitter<TableUI[]>(); 
   @Output() confirm = new EventEmitter<{
     tables: { id: number; seats: number }[];
     form: {
@@ -56,20 +65,12 @@ export class ReservationDialogComponent implements OnInit {
     }
   }>();
 
-  private static permanentlyOccupied: number[] = [];
+  // Główna lista stolików w widoku
+  tables: TableUI[] = [];
 
-  tables: Table[] = [
-    { id: 1, seats: 4, top: 160, left: 160, reserved: false },
-    { id: 2, seats: 6, top: 160, left: 410, reserved: false },
-    { id: 3, seats: 2, top: 160, left: 660, reserved: false },
-    { id: 4, seats: 4, top: 360, left: 210, reserved: false },
-    { id: 5, seats: 8, top: 360, left: 460, reserved: false },
-    { id: 6, seats: 4, top: 530, left: 140, reserved: false },
-    { id: 7, seats: 4, top: 530, left: 360, reserved: false },
-    { id: 8, seats: 6, top: 530, left: 610, reserved: false },
-  ];
-
-  selectedTables: Table[] = [];
+  // Zmienne stanu
+  selectedTables: TableUI[] = [];      // Stoliki wybrane przez klienta do rezerwacji
+  editingTable: TableUI | null = null; // Stolik aktualnie edytowany przez właściciela
   
   formData = {
     imie: '',
@@ -83,28 +84,77 @@ export class ReservationDialogComponent implements OnInit {
   constructor(private reservationService: ReservationService) {}
 
   ngOnInit(): void {
-    this.fetchAndBlockReservedTables();
+    if (this.restauracjaId) {
+      this.loadTablesFromDb();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // 1. Zmiana restauracji -> pobierz nowy układ
+    if (changes['restauracjaId'] && this.restauracjaId) {
+      this.loadTablesFromDb();
+    }
+    // 2. Otwarcie okna -> odśwież rezerwacje (zajętość)
+    if (changes['visible'] && this.visible && this.restauracjaId) {
+      this.fetchAndBlockReservedTables(); 
+    }
+    // 3. Zmiana trybu edycji -> wyczyść zaznaczenia
+    if (changes['isEditable']) {
+      this.editingTable = null;
+      this.selectedTables = [];
+    }
+  }
+
+  // --- 1. POBIERANIE DANYCH Z BAZY ---
+
+  async loadTablesFromDb() {
+    try {
+      const stolikiDb = await this.reservationService.getStolikiByRestauracja(this.restauracjaId);
+      
+      // Mapowanie modelu z backendu (Stolik) na model widoku (TableUI)
+      this.tables = stolikiDb.map(s => ({
+        id: s.stolik_id,
+        seats: s.ilosc_miejsc,
+        lokalizacja: s.lokalizacja,
+        // Domyślne 50,50 jeśli w bazie jest null/0, żeby stolik nie "zniknął" poza ekranem
+        left: s.pozycjaX_UI || 50, 
+        top: s.pozycjaY_UI || 50,
+        reserved: false,
+        permanentlyReserved: false,
+        originalData: s
+      }));
+
+      // Po załadowaniu struktury, sprawdźmy dostępność na wybraną datę
+      this.fetchAndBlockReservedTables();
+
+    } catch (error) {
+      console.error('Błąd podczas pobierania stolików:', error);
+    }
   }
 
   async fetchAndBlockReservedTables() {
-    if (!this.restauracjaId || !this.formData.data || !this.formData.godzina) {
+    if (!this.restauracjaId || !this.formData.data || !this.formData.godzina || this.tables.length === 0) {
       return;
     }
     this.loadingReserved = true;
     const dataStr = this.formatDate(this.formData.data);
     const godzinaStr = this.formatTime(this.formData.godzina);
+    
     try {
       const reservations = await this.reservationService.getOccupied(
         this.restauracjaId,
         dataStr,
         godzinaStr
       );
-      const reservedIds = reservations.flatMap(r => r.stoliki);
+      
+      // Backend zwraca listę rezerwacji, każda ma tablicę 'stoliki' (IDs)
+      const reservedIds = reservations.flatMap(r => r.stoliki); 
+
       this.tables.forEach(table => {
         if (reservedIds.includes(table.id)) {
           table.reserved = true;
           table.permanentlyReserved = true;
-          // Remove from selected if just became reserved
+          // Jeśli klient miał go zaznaczonego, a okazuje się zajęty -> odznacz
           this.selectedTables = this.selectedTables.filter(t => t.id !== table.id);
         } else {
           table.reserved = false;
@@ -113,76 +163,110 @@ export class ReservationDialogComponent implements OnInit {
       });
     } catch (err) {
       console.error('[DEBUG] Błąd pobierania rezerwacji:', err);
-      this.tables.forEach(table => {
-        table.reserved = false;
-        table.permanentlyReserved = false;
-      });
     }
     this.loadingReserved = false;
   }
 
-  formatDate(date: Date): string {
-    return date.toISOString().slice(0, 10);
-  }
-  formatTime(date: Date): string {
-    return date.toTimeString().slice(0, 5);
+  // --- 2. EDYTOR UKŁADU (WŁAŚCICIEL) ---
+
+  // Dodawanie nowego stolika do widoku
+  addNewTable() {
+    // Generujemy tymczasowe ID dla widoku (największe + 1). Backend nada prawdziwe ID po zapisie.
+    const newId = this.tables.length > 0 ? Math.max(...this.tables.map(t => t.id)) + 1 : 1;
+    
+    const newTable: TableUI = {
+      id: newId,
+      seats: 4, // Domyślnie 4 miejsca
+      top: 100, // Domyślna pozycja startowa
+      left: 100,
+      lokalizacja: 'Sala',
+      reserved: false,
+      permanentlyReserved: false
+    };
+
+    this.tables.push(newTable);
+    this.editingTable = newTable; // Od razu zaznaczamy do edycji
   }
 
-  // --- LOGIKA DRAG & DROP (POPRAWIONA) ---
+  // Usuwanie aktualnie edytowanego stolika
+  deleteTable() {
+    if (!this.editingTable) return;
+    
+    this.tables = this.tables.filter(t => t !== this.editingTable);
+    this.editingTable = null; // Czyścimy wybór
+  }
 
-  onDragEnded(event: CdkDragEnd, table: Table) {
+  // Obsługa kliknięcia w stolik (zależnie od trybu)
+  onTableClick(table: TableUI) {
+    if (this.isEditable) {
+      // Tryb edycji: wybieramy stolik do edycji parametrów
+      this.editingTable = table;
+    } else {
+      // Tryb klienta: zaznaczamy stolik do rezerwacji
+      this.toggleTableSelection(table);
+    }
+  }
+
+  // Kliknięcie w tło sali (odznaczenie edycji)
+  onBackgroundClick(event: MouseEvent) {
+    // Sprawdzamy czy kliknięto bezpośrednio w tło (.restaurant-hall), a nie w dziecko (stolik)
+    if ((event.target as HTMLElement).classList.contains('restaurant-hall')) {
+      if (this.isEditable) {
+        this.editingTable = null;
+      }
+    }
+  }
+
+  // Drag & Drop (przesuwanie stolików)
+  onDragEnded(event: CdkDragEnd, table: TableUI) {
     if (!this.isEditable) return;
 
-    // Pobieramy element DOM stolika i jego rodzica (salę)
     const element = event.source.element.nativeElement;
     const parent = element.parentElement;
 
     if (!parent) return;
 
-    // 1. Pobieramy dokładną pozycję stolika na ekranie (gdzie go upuściłeś)
+    // Obliczamy nową pozycję względem rodzica (sali)
     const elementRect = element.getBoundingClientRect();
-    
-    // 2. Pobieramy pozycję rodzica na ekranie
     const parentRect = parent.getBoundingClientRect();
 
-    // 3. Obliczamy grubość ramki (border) rodzica, 
-    //    ponieważ pozycjonowanie 'absolute' jest względem wnętrza (padding-box),
-    //    a getBoundingClientRect uwzględnia ramki.
     const borderLeft = parent.clientLeft || 0;
     const borderTop = parent.clientTop || 0;
 
-    // 4. Obliczamy nową pozycję:
-    //    Pozycja Elementu - Pozycja Rodzica - Ramka Rodzica + Scroll Rodzica
     const newLeft = elementRect.left - parentRect.left - borderLeft + parent.scrollLeft;
     const newTop = elementRect.top - parentRect.top - borderTop + parent.scrollTop;
 
-    // 5. Aktualizujemy model
+    // Aktualizacja modelu lokalnego
     table.left = newLeft;
     table.top = newTop;
+    
+    // Po przesunięciu ustawiamy go też jako edytowany, żeby łatwo zmienić np. liczbę miejsc
+    this.editingTable = table;
 
-    // 6. Resetujemy transformację CDK. 
-    //    Stolik zostanie w miejscu, które właśnie obliczyliśmy i przypisaliśmy do [style.top/left].
+    // Reset transformacji CSS (bo pozycja jest już ustawiona przez [style.top/left])
     event.source.reset();
   }
 
   saveLayout() {
+    // Emitujemy aktualny stan tabel do rodzica (który wyśle to do API)
     this.layoutSaved.emit(this.tables);
     this.close();
   }
 
-  // --- LOGIKA WYBORU STOLIKA (KLIENT) ---
+  // --- 3. REZERWACJA (KLIENT) ---
 
-  isTableSelected(table: Table): boolean {
+  isTableSelected(table: TableUI): boolean {
+    if (this.isEditable) {
+      return this.editingTable === table; // W trybie edycji zaznaczony jest ten edytowany
+    }
     return this.selectedTables.some(t => t.id === table.id);
   }
 
-  toggleTableSelection(table: Table) {
+  toggleTableSelection(table: TableUI) {
     if (this.isEditable || table.permanentlyReserved) {
       return;
     }
-
     const index = this.selectedTables.findIndex(t => t.id === table.id);
-
     if (index > -1) {
       this.selectedTables.splice(index, 1);
     } else {
@@ -190,27 +274,12 @@ export class ReservationDialogComponent implements OnInit {
     }
   }
 
-  removeTable(table: Table) {
+  removeTableFromSelection(table: TableUI) {
     this.selectedTables = this.selectedTables.filter(t => t.id !== table.id);
   }
 
-  // --- LOGIKA FORMULARZA ---
-
-  close() {
-    this.visible = false;
-    this.visibleChange.emit(this.visible);
-    this.resetForm();
-  }
-
-  private resetForm() {
-    this.selectedTables = [];
-    this.formData = { imie: '', telefon: '', data: new Date(), godzina: new Date() };
-  }
-
   confirmReservationWithForm() {
-    if (!this.isFormValid()) {
-      return;
-    }
+    if (!this.isFormValid()) return;
 
     const confirmedTables = this.selectedTables.map(t => ({
       id: t.id,
@@ -223,6 +292,20 @@ export class ReservationDialogComponent implements OnInit {
     });
 
     this.close();
+  }
+
+  // --- 4. UTILS & FORMULARZ ---
+
+  close() {
+    this.visible = false;
+    this.visibleChange.emit(this.visible);
+    this.resetForm();
+  }
+
+  private resetForm() {
+    this.selectedTables = [];
+    this.editingTable = null;
+    this.formData = { imie: '', telefon: '', data: new Date(), godzina: new Date() };
   }
 
   isFormValid(): boolean {
@@ -239,13 +322,20 @@ export class ReservationDialogComponent implements OnInit {
     return this.selectedTables.reduce((sum, t) => sum + t.seats, 0);
   }
 
+  // Rysowanie krzeseł wokół stolika
   getChairTransform(seats: number, index: number): string {
     const angle = (index * 360) / seats;
-    const radius = seats <= 4 ? 68 : 76;
+    const radius = seats <= 4 ? 68 : 76; // Większy promień dla większych stolików
     return `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px) rotate(-${angle}deg)`;
   }
 
-  // Add listeners for date/hour change
+  formatDate(date: Date): string {
+    return date.toISOString().slice(0, 10);
+  }
+  formatTime(date: Date): string {
+    return date.toTimeString().slice(0, 5);
+  }
+
   onDateChange() {
     this.fetchAndBlockReservedTables();
   }

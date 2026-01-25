@@ -2,11 +2,13 @@ import { CreateRezerwacjaDto } from "../models/rezerwacja.model";
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { firstValueFrom } from "rxjs";
+import { Stolik } from "../models/stolik.model";
 
 
 @Injectable()
 export class ReservationService {
   private apiUrl = 'http://localhost:3000/rezerwacja'; 
+  private stolikiUrl = 'http://localhost:3000/stoliki';
 
   constructor(private http: HttpClient) {}
 
@@ -50,6 +52,17 @@ export class ReservationService {
     });
     const params = { restauracja_id, data, godzina };
     return firstValueFrom(this.http.get<CreateRezerwacjaDto[]>(`${this.apiUrl}/occupied`, { headers, params }));
+  }
+
+  // NOWA METODA: Pobieranie układu stolików z bazy
+  getStolikiByRestauracja(restauracjaId: number): Promise<Stolik[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+    return firstValueFrom(
+      this.http.get<Stolik[]>(`${this.stolikiUrl}/restauracja/${restauracjaId}`, { headers })
+    );
   }
 
 }
