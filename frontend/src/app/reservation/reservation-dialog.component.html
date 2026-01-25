@@ -24,7 +24,7 @@
   <div class="reservation-container">
     <div class="main-content">
       
-      <div class="restaurant-hall">
+      <div class="restaurant-hall" (click)="onBackgroundClick($event)">
         
         <div class="bar-area">
           <div class="bar-counter"></div>
@@ -33,14 +33,11 @@
           </div>
           <div class="bar-label">BAR</div>
         </div>
-
         <div class="wall-window window-top" style="left: 20px; width: 120px;"></div>
         <div class="wall-window window-top" style="left: 260px; width: 120px;"></div>
         <div class="wall-window window-top" style="left: 500px; width: 120px;"></div>
-
         <div class="wall-window window-left" style="top: 30px; height: 180px;"></div>
         <div class="wall-window window-left" style="top: 340px; height: 180px;"></div>
-
         <div class="wall-door door-bottom" style="left: 50%; transform: translateX(-50%);">
           <div class="door-mat"></div>
         </div>
@@ -59,11 +56,9 @@
              [class.permanently-reserved]="table.permanentlyReserved && !isEditable"
              [class.selectable]="!table.permanentlyReserved && !isEditable"
              [class.draggable-mode]="isEditable"
-             [class.table-selected]="isTableSelected(table) && !isEditable"
+             [class.table-selected]="isTableSelected(table)"
              
-             (click)="!isEditable ? toggleTableSelection(table) : null">
-
-          <div class="chair-seat"
+             (click)="onTableClick(table); $event.stopPropagation()"> <div class="chair-seat"
                *ngFor="let i of [].constructor(table.seats); let idx = index"
                [style.transform]="getChairTransform(table.seats, idx)">
           </div>
@@ -113,9 +108,6 @@
                   [(ngModel)]="formData.data" 
                   dateFormat="yy-mm-dd" 
                   [showIcon]="true" 
-                  placeholder="Data"
-                  styleClass="full-width-calendar"
-                  [inputStyle]="{'width': '100%'}"
                   appendTo="body"
                   (onSelect)="onDateChange()">
                 </p-datepicker>
@@ -129,9 +121,6 @@
                   [timeOnly]="true" 
                   hourFormat="24" 
                   [showIcon]="true" 
-                  placeholder="Godzina"
-                  styleClass="full-width-calendar"
-                  [inputStyle]="{'width': '100%'}"
                   appendTo="body"
                   (onSelect)="onHourChange()">
                 </p-datepicker>
@@ -143,14 +132,13 @@
                 <h4>Wybrane stoliki <span class="badge">{{ selectedTables.length }}</span></h4>
                 <span class="total-seats">Miejsc: <strong>{{ getTotalSeats() }}</strong></span>
               </div>
-
               <div class="selected-tables-chips">
                 <div class="table-chip" *ngFor="let t of selectedTables">
                   <div class="chip-content">
                     <span class="chip-icon">T{{ t.id }}</span>
                     <span class="chip-info">{{ t.seats }}os.</span>
                   </div>
-                  <button class="chip-remove" (click)="removeTable(t)">
+                  <button class="chip-remove" (click)="removeTableFromSelection(t)">
                     <i class="pi pi-times"></i>
                   </button>
                 </div>
@@ -159,11 +147,11 @@
           </div>
 
           <div class="form-actions">
-            <button pButton label="Anuluj" class="p-button-text p-button-secondary action-btn-cancel" (click)="close()"></button>
+            <button pButton label="Anuluj" class="p-button-text p-button-secondary" (click)="close()"></button>
             <button pButton 
                     [label]="selectedTables.length === 0 ? 'Wybierz stolik' : 'Zatwierdź'" 
                     icon="pi pi-check"
-                    class="p-button-success action-btn-confirm"
+                    class="p-button-success"
                     [disabled]="selectedTables.length === 0 || !isFormValid()"
                     (click)="confirmReservationWithForm()">
             </button>
@@ -173,29 +161,71 @@
         <ng-container *ngIf="isEditable">
           <div class="sidebar-header">
             <h3>Edytor układu</h3>
-            <p class="subtitle">Zarządzaj rozmieszczeniem stolików.</p>
+            <p class="subtitle">Zarządzaj stolikami w sali.</p>
           </div>
 
           <div class="form-content">
-            <div style="background: #e3f2fd; padding: 16px; border-radius: 12px; border: 1px solid #bbdefb; color: #0d47a1; display: flex; gap: 12px; align-items: start;">
-              <i class="pi pi-info-circle" style="font-size: 1.2rem; margin-top: 2px;"></i> 
-              <div style="font-size: 0.9rem; line-height: 1.4;">
-                <strong>Tryb edycji włączony.</strong><br>
-                Możesz chwycić dowolny stolik i przesunąć go w inne miejsce na sali.
-              </div>
-            </div>
             
-            <div style="margin-top: 20px; text-align: center; color: #95a5a6; font-size: 0.9rem;">
-               Kliknij "Zapisz układ", aby zapamiętać nowe pozycje stolików.
+            <div *ngIf="!editingTable" class="editor-default-state">
+              <div class="info-box">
+                <i class="pi pi-info-circle"></i>
+                <p>Kliknij na stolik, aby edytować jego parametry lub usunąć go.</p>
+              </div>
+              
+              <button pButton 
+                      label="Dodaj nowy stolik" 
+                      icon="pi pi-plus" 
+                      class="p-button-outlined p-button-primary full-width-btn"
+                      (click)="addNewTable()">
+              </button>
             </div>
+
+            <div *ngIf="editingTable" class="editor-selected-state">
+              <div class="selected-table-header">
+                <h4>Edycja stolika #{{ editingTable.id }}</h4>
+              </div>
+
+              <div class="form-group">
+                <label>Lokalizacja</label>
+                <input pInputText [(ngModel)]="editingTable.lokalizacja" placeholder="np. Okno, Środek" />
+              </div>
+
+              <div class="form-group">
+                <label>Ilość miejsc</label>
+                <p-inputNumber 
+                  [(ngModel)]="editingTable.seats" 
+                  [min]="1" 
+                  [max]="20" 
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  inputId="horizontal"
+                  spinnerMode="horizontal"
+                  [step]="1"
+                  decrementButtonClass="p-button-secondary"
+                  incrementButtonClass="p-button-secondary"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus">
+                </p-inputNumber>
+              </div>
+
+              <div class="form-divider"></div>
+
+              <button pButton 
+                      label="Usuń ten stolik" 
+                      icon="pi pi-trash" 
+                      class="p-button-danger p-button-outlined full-width-btn"
+                      (click)="deleteTable()">
+              </button>
+            </div>
+
           </div>
 
           <div class="form-actions">
-            <button pButton label="Anuluj" class="p-button-text p-button-secondary action-btn-cancel" (click)="close()"></button>
+            <button pButton label="Anuluj" class="p-button-text p-button-secondary" (click)="close()"></button>
             <button pButton 
                     label="Zapisz układ" 
                     icon="pi pi-save"
-                    class="p-button-success action-btn-confirm"
+                    class="p-button-success"
                     (click)="saveLayout()">
             </button>
           </div>
