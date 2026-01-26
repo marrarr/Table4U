@@ -8,7 +8,7 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 import { RestauracjaService } from '../restauracja/restauracja.service';
 import { Restauracja } from '../models/restauracja.model';
-import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
+import { ReservationDialogComponent, TableUI } from '../reservation/reservation-dialog.component';
 import { CreateRezerwacjaDto } from '../models/rezerwacja.model';
 import { ReservationService } from '../reservation/reservation.service';
 
