@@ -107,16 +107,30 @@ export class ReservationDialogComponent implements OnInit, OnChanges {
 
   // --- 1. POBIERANIE DANYCH Z BAZY ---
 
+  // --- POBIERANIE UKŁADU Z BAZY ---
   async loadTablesFromDb() {
     try {
       const stolikiDb = await this.reservationService.getStolikiByRestauracja(this.restauracjaId);
       
-      // Mapowanie modelu z backendu (Stolik) na model widoku (TableUI)
+      // JEŚLI BAZA PUSTA -> ZAŁADUJ DANE TESTOWE (żebyś coś widział)
+      if (!stolikiDb || stolikiDb.length === 0) {
+        console.warn('Brak stolików w bazie! Ładuję dane testowe.');
+        this.tables = [
+          { id: 1, seats: 4, top: 160, left: 160, lokalizacja: 'Okno', reserved: false },
+          { id: 2, seats: 6, top: 160, left: 410, lokalizacja: 'Środek', reserved: false },
+          { id: 3, seats: 2, top: 160, left: 660, lokalizacja: 'Korytarz', reserved: false },
+          { id: 4, seats: 4, top: 360, left: 210, lokalizacja: 'Okno', reserved: false },
+          { id: 5, seats: 8, top: 360, left: 460, lokalizacja: 'VIP', reserved: false },
+        ];
+        return;
+      }
+
+      // JEŚLI SĄ DANE W BAZIE -> MAPUJEMY JE
       this.tables = stolikiDb.map(s => ({
         id: s.stolik_id,
         seats: s.ilosc_miejsc,
         lokalizacja: s.lokalizacja,
-        // Domyślne 50,50 jeśli w bazie jest null/0, żeby stolik nie "zniknął" poza ekranem
+        // Domyślne 50,50 jeśli w bazie jest null/0
         left: s.pozycjaX_UI || 50, 
         top: s.pozycjaY_UI || 50,
         reserved: false,
@@ -124,7 +138,7 @@ export class ReservationDialogComponent implements OnInit, OnChanges {
         originalData: s
       }));
 
-      // Po załadowaniu struktury, sprawdźmy dostępność na wybraną datę
+      // Po załadowaniu struktury, sprawdźmy dostępność
       this.fetchAndBlockReservedTables();
 
     } catch (error) {
