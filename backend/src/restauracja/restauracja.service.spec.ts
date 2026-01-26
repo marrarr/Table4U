@@ -4,7 +4,9 @@ import { RestauracjaService } from './restauracja.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Restauracja } from './restauracja.entity';
 import { RestauracjaObraz } from './obrazy/restauracjaObraz.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { Stolik } from '../stolik/stolik.entity';
+// import { Stolik } from './stolik.entity';
 
 /**
  * Testy jednostkowe dla RestauracjaService
@@ -14,6 +16,8 @@ describe('RestauracjaService', () => {
   let service: RestauracjaService;
   let restauracjaRepository: Repository<Restauracja>;
   let obrazRepository: Repository<RestauracjaObraz>;
+  let stolikRepository: Repository<Stolik>;
+  let dataSource: DataSource;
 
   // Mock (atrapa) repozytorium Restauracja - symuluje operacje na bazie danych
   const mockRestauracjaRepository = {
@@ -33,6 +37,21 @@ describe('RestauracjaService', () => {
     create: jest.fn(),
     save: jest.fn(),
     delete: jest.fn(),
+  };
+
+  // Mock (atrapa) repozytorium Stolik - symuluje operacje na stolikach
+  const mockStolikRepository = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    delete: jest.fn(),
+    update: jest.fn(),
+  };
+
+  // Mock DataSource dla transakcji
+  const mockDataSource = {
+    transaction: jest.fn(),
   };
 
   // Mock Query Builder dla zaawansowanych zapytań
@@ -55,12 +74,22 @@ describe('RestauracjaService', () => {
           provide: getRepositoryToken(RestauracjaObraz), // Token dla repozytorium RestauracjaObraz
           useValue: mockObrazRepository,
         },
+        {
+          provide: getRepositoryToken(Stolik),  // Token dla repozytorium Stolik
+          useValue: mockStolikRepository,
+        },
+        {
+          provide: DataSource,  // Token dla DataSource
+          useValue: mockDataSource,
+        },
       ],
     }).compile();
 
     service = module.get<RestauracjaService>(RestauracjaService);
     restauracjaRepository = module.get<Repository<Restauracja>>(getRepositoryToken(Restauracja));
     obrazRepository = module.get<Repository<RestauracjaObraz>>(getRepositoryToken(RestauracjaObraz));
+    stolikRepository = module.get<Repository<Stolik>>(getRepositoryToken(Stolik));
+    dataSource = module.get<DataSource>(DataSource);
 
     // Konfiguracja Query Builder
     mockRestauracjaRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
@@ -165,6 +194,6 @@ describe('RestauracjaService', () => {
     expect(result).toHaveProperty('nazwa', 'Restauracja Test');
     // 3. Obraz został załadowany i przekonwertowany na base64
     expect(result.obraz).toBeDefined();
-    expect(result.obraz.obrazBase64).toBe(Buffer.from('testimage1').toString('base64'));
+    expect(result.obraz?.obrazBase64).toBe(Buffer.from('testimage1').toString('base64'));
   });
 });

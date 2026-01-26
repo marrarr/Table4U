@@ -90,7 +90,7 @@ describe('RestauracjaObrazService', () => {
       nazwa_pliku: mockFile.originalname,
       typ: mockFile.mimetype,
       rozmiar: mockFile.size,
-      czy_glowne: false,
+      czy_glowne: true,
       restauracja: mockRestauracja,
     };
 
@@ -114,6 +114,7 @@ describe('RestauracjaObrazService', () => {
       typ: mockFile.mimetype,
       rozmiar: mockFile.size,
       restauracja: mockRestauracja,
+      czy_glowne: true,
     });
     // 3. Obraz został zapisany w bazie danych
     expect(mockObrazRepository.save).toHaveBeenCalledWith(mockObraz);
@@ -149,3 +150,4 @@ describe('RestauracjaObrazService', () => {
     expect(mockObrazRepository.delete).toHaveBeenCalledTimes(1);
   });
 });
+
