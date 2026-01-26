@@ -44,6 +44,7 @@ export class RestauracjaComponent implements OnInit {
   editingDialog = false;
 
   selectedFiles: File[] = [];
+  editSelectedFile: File | null = null;
 
   floorPlanDialogVisible = false;
   currentRestaurantForLayout: Restauracja | null = null;
@@ -135,6 +136,10 @@ export class RestauracjaComponent implements OnInit {
     this.editedRestaurant = { ...restaurant };
     this.editingDialog = true;
   }
+  onEditFileSelected(event: any) {
+    const file = event.target.files && event.target.files[0];
+    this.editSelectedFile = file || null;
+  }
 
   async updateRestaurant() {
     try {
@@ -143,10 +148,22 @@ export class RestauracjaComponent implements OnInit {
         this.editedRestaurant
       );
 
+      // Jeśli wybrano nowy plik do edycji, prześlij go
+      if (this.editSelectedFile) {
+        try {
+          const obraz = await this.restauracjaService.uploadImage(updated.restauracja_id!, this.editSelectedFile);
+          // zaktualizuj pole obraz w zwróconym obiekcie
+          (updated as any).obraz = obraz;
+        } catch (err) {
+          console.error('Błąd przy przesyłaniu obrazu:', err);
+        }
+      }
+
       const index = this.restauracje.findIndex(r => r.restauracja_id === updated.restauracja_id);
       if (index !== -1) this.restauracje[index] = updated;
 
       this.editingDialog = false;
+      this.editSelectedFile = null;
 
       // Otwórz edytor układu po edycji
       setTimeout(() => {
@@ -163,14 +180,30 @@ export class RestauracjaComponent implements OnInit {
     }
   }
 
+  async deleteImage(restaurant: Restauracja) {
+    if (!restaurant.restauracja_id || !restaurant.obraz) return;
+    try {
+      await this.restauracjaService.deleteImage(restaurant.restauracja_id, restaurant.obraz.id!);
+      // zaktualizuj lokalnie
+      const index = this.restauracje.findIndex(r => r.restauracja_id === restaurant.restauracja_id);
+      if (index !== -1) this.restauracje[index].obraz = null;
+      if (this.editedRestaurant && this.editedRestaurant.restauracja_id === restaurant.restauracja_id) {
+        this.editedRestaurant.obraz = null;
+      }
+    } catch (err) {
+      console.error('Błąd przy usuwaniu obrazu:', err);
+      this.messageService.add({ severity: 'error', summary: 'Błąd', detail: 'Nie udało się usunąć obrazu' });
+    }
+  }
+
   openFloorPlanEditor(restaurant: Restauracja) {
     this.currentRestaurantForLayout = restaurant;
     this.floorPlanDialogVisible = true;
   }
 
   getMainImage(restaurant: Restauracja) {
-    if (!restaurant.obrazy || restaurant.obrazy.length === 0) return null;
-    return restaurant.obrazy.find(o => o.czy_glowne) || restaurant.obrazy[0];
+    if (!restaurant.obraz) return null;
+    return restaurant.obraz;
   }
 
   // ZAIMPLEMENTOWANA METODA - zapisuje układ stolików do bazy

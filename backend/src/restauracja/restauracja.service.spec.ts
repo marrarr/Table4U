@@ -85,16 +85,14 @@ describe('RestauracjaService', () => {
         adres: 'ul. Testowa 1',
         nr_kontaktowy: '123456789',
         email: 'test1@restaurant.com',
-        obrazy: [
-          {
-            id: 1,
-            nazwa_pliku: 'image1.jpg',
-            typ: 'image/jpeg',
-            rozmiar: 1024,
-            czy_glowne: true,
-            obraz: Buffer.from('test'),
-          },
-        ],
+        obraz: {
+          id: 1,
+          nazwa_pliku: 'image1.jpg',
+          typ: 'image/jpeg',
+          rozmiar: 1024,
+          czy_glowne: true,
+          obraz: Buffer.from('test'),
+        },
       },
       {
         restauracja_id: 2,
@@ -102,7 +100,7 @@ describe('RestauracjaService', () => {
         adres: 'ul. Testowa 2',
         nr_kontaktowy: '987654321',
         email: 'test2@restaurant.com',
-        obrazy: [],
+        obraz: null,
       },
     ];
 
@@ -115,16 +113,16 @@ describe('RestauracjaService', () => {
     // Asercje - sprawdzamy czy:
     // 1. Repozytorium zostało wywołane z relacją obrazy
     expect(mockRestauracjaRepository.find).toHaveBeenCalledWith({
-      relations: ['obrazy'],
+      relations: ['obraz'],
     });
     // 2. Zwrócona lista zawiera odpowiednią liczbę elementów
     expect(result).toHaveLength(2);
     // 3. Dane są przekonwertowane na format API
     expect(result[0]).toHaveProperty('restauracja_id', 1);
     expect(result[0]).toHaveProperty('nazwa', 'Restauracja Test 1');
-    // 4. Obrazy są przekonwertowane na base64
-    expect(result[0].obrazy).toHaveLength(1);
-    expect(result[0].obrazy[0]).toHaveProperty('obrazBase64');
+    // 4. Obraz jest przekonwertowany na base64
+    expect(result[0].obraz).toBeDefined();
+    expect(result[0].obraz).toHaveProperty('obrazBase64');
   });
 
   /**
@@ -140,24 +138,14 @@ describe('RestauracjaService', () => {
       adres: 'ul. Testowa 1',
       nr_kontaktowy: '123456789',
       email: 'test@restaurant.com',
-      obrazy: [
-        {
-          id: 1,
-          nazwa_pliku: 'image1.jpg',
-          typ: 'image/jpeg',
-          rozmiar: 1024,
-          czy_glowne: true,
-          obraz: Buffer.from('testimage1'),
-        },
-        {
-          id: 2,
-          nazwa_pliku: 'image2.jpg',
-          typ: 'image/jpeg',
-          rozmiar: 2048,
-          czy_glowne: false,
-          obraz: Buffer.from('testimage2'),
-        },
-      ],
+      obraz: {
+        id: 1,
+        nazwa_pliku: 'image1.jpg',
+        typ: 'image/jpeg',
+        rozmiar: 1024,
+        czy_glowne: true,
+        obraz: Buffer.from('testimage1'),
+      },
     };
 
     // Konfiguracja mocka
@@ -170,15 +158,13 @@ describe('RestauracjaService', () => {
     // 1. Zapytanie zawiera właściwe warunki i relacje
     expect(mockRestauracjaRepository.findOne).toHaveBeenCalledWith({
       where: { restauracja_id: 1 },
-      relations: ['obrazy'],
+      relations: ['obraz'],
     });
     // 2. Zwrócona restauracja zawiera wszystkie dane w formacie API
     expect(result).toHaveProperty('restauracja_id', 1);
     expect(result).toHaveProperty('nazwa', 'Restauracja Test');
-    // 3. Obrazy zostały załadowane i przekonwertowane na base64
-    expect(result.obrazy).toBeDefined();
-    expect(result.obrazy).toHaveLength(2);
-    expect(result.obrazy[0]).toHaveProperty('obrazBase64');
-    expect(result.obrazy[0].obrazBase64).toBe(Buffer.from('testimage1').toString('base64'));
+    // 3. Obraz został załadowany i przekonwertowany na base64
+    expect(result.obraz).toBeDefined();
+    expect(result.obraz.obrazBase64).toBe(Buffer.from('testimage1').toString('base64'));
   });
 });

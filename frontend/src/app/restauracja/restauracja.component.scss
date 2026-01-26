@@ -384,6 +384,31 @@ $radius: 14px;
       background: $bg-page;
     }
   }
+
+  &.image-edit {
+    .current-image {
+      margin: 0.5rem 0;
+      img {
+        display: block;
+        max-width: 100%;
+        max-height: 180px; /* ogranicz wysokość, ale nie przycinaj */
+        width: auto;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      }
+    }
+
+    .image-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+
+      input[type="file"] {
+        padding: 0;
+      }
+    }
+  }
 }
 
 // === ANIMATIONS ===
@@ -431,6 +456,11 @@ $radius: 14px;
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+  .image-edit {
+    .current-image img {
+      max-height: 140px;
+    }
   }
 }
 
