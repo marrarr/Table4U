@@ -1,0 +1,139 @@
+<div class="rezerwacje-container">
+  <p-toast></p-toast>
+  
+  <div class="header">
+    <h1>Moje Rezerwacje</h1>
+  </div>
+
+  <p-card>
+    <p-table 
+      [value]="rezerwacje" 
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Pokazuje {first} do {last} z {totalRecords} rezerwacji"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      styleClass="p-datatable-striped">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Data</th>
+          <th>Godzina</th>
+          <th>Imię</th>
+          <th>Telefon</th>
+          <th>Liczba osób</th>
+          <th *ngIf="!isUser()">Restauracja</th>
+          <th *ngIf="isAdmin() || isOwner()">Użytkownik</th>
+          <th>Status</th>
+          <th>Akcje</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-rezerwacja>
+        <tr>
+          <td>{{ rezerwacja.rezerwacja_id }}</td>
+          <td>{{ rezerwacja.data }}</td>
+          <td>{{ rezerwacja.godzina }}</td>
+          <td>{{ rezerwacja.imie }}</td>
+          <td>{{ rezerwacja.telefon }}</td>
+          <td>{{ rezerwacja.liczba_osob }}</td>
+          <td *ngIf="!isUser()">{{ rezerwacja.restauracja?.nazwa || 'Brak' }}</td>
+          <td *ngIf="isAdmin() || isOwner()">{{ rezerwacja.uzytkownik?.username || 'Brak' }}</td>
+          <td>
+            <p-tag 
+              [value]="getStatusLabel(rezerwacja.status)" 
+              [severity]="getStatusSeverity(rezerwacja.status)">
+            </p-tag>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <!-- Przycisk Anuluj dla user, owner i admin -->
+              <p-button 
+                *ngIf="(isUser() || isOwner() || isAdmin()) && canCancel(rezerwacja)"
+                label="Anuluj" 
+                icon="pi pi-times"
+                severity="success"
+                size="small"
+                (onClick)="anulujRezerwacje(rezerwacja)"
+                styleClass="ml-2">
+              </p-button>
+              
+              <!-- Przycisk Potwierdź dla owner i admin -->
+              <p-button 
+                *ngIf="(isOwner() || isAdmin()) && canConfirm(rezerwacja)"
+                label="Potwierdź" 
+                icon="pi pi-check"
+                severity="success"
+                size="small"
+                (onClick)="potwierdzRezerwacje(rezerwacja)"
+                styleClass="ml-2">
+              </p-button>
+              
+              <!-- Przycisk Edytuj dla zalogowanych (edycja pól rezerwacji) -->
+              <p-button
+                *ngIf="(isUser() || isOwner() || isAdmin()) && rezerwacja.status !== 'anulowana'"
+                label="Edytuj"
+                icon="pi pi-pencil"
+                severity="secondary"
+                size="small"
+                (onClick)="openEditDialog(rezerwacja)"
+                styleClass="ml-2">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td [attr.colspan]="isAdmin() ? 10 : (isOwner() ? 10 : 10)">
+            Brak rezerwacji
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Edit dialog -->
+  <p-dialog header="Edytuj rezerwację" [(visible)]="editDialogVisible" [modal]="true" [style]="{width: '520px'}">
+    <div *ngIf="editedRezerwacja" class="edit-form">
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label">Imię</label>
+          <div class="form-input"><input pInputText type="text" [(ngModel)]="editedRezerwacja.imie" /></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Telefon</label>
+          <div class="form-input"><input pInputText type="text" [(ngModel)]="editedRezerwacja.telefon" /></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Data</label>
+          <div class="form-input"><input pInputText type="date" [(ngModel)]="editedRezerwacja.data" /></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Godzina</label>
+          <div class="form-input"><input pInputText type="time" [(ngModel)]="editedRezerwacja.godzina" /></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Liczba osób</label>
+          <div class="form-input"><input pInputText type="number" [(ngModel)]="editedRezerwacja.liczba_osob" /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fallback visible buttons (always rendered inside dialog content) -->
+    <div class="dialog-buttons">
+      <p-button label="Anuluj" icon="pi pi-times" (onClick)="editDialogVisible=false"></p-button>
+      <p-button label="Zapisz" icon="pi pi-check" (onClick)="saveEdit()" styleClass="ml-2" severity="success"></p-button>
+    </div>
+
+    <ng-template pFooter>
+      <div class="dialog-footer">
+        <p-button label="Anuluj" icon="pi pi-times" (onClick)="editDialogVisible=false"></p-button>
+        <p-button label="Zapisz" icon="pi pi-check" (onClick)="saveEdit()" styleClass="ml-2" severity="success"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

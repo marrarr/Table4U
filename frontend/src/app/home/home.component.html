@@ -1,0 +1,68 @@
+<div class="home-container">
+  <header class="page-header">
+    <h1>Restauracje</h1>
+    <p class="header-subtitle">Wybierz miejsce i zarezerwuj stolik</p>
+  </header>
+
+  <div class="restaurants-grid" *ngIf="!loading && restauracje.length > 0">
+    <article *ngFor="let restauracja of restauracje" class="restaurant-card">
+      
+      <div class="card-image" *ngIf="getMainImage(restauracja) as img">
+        <img [src]="'data:' + img.typ + ';base64,' + img.obrazBase64" [alt]="restauracja.nazwa" />
+        <div class="image-overlay"></div>
+      </div>
+      <div class="card-image card-placeholder" *ngIf="!getMainImage(restauracja)">
+        <i class="pi pi-image"></i>
+      </div>
+
+      <div class="card-content">
+        <h3 class="card-title">{{ restauracja.nazwa }}</h3>
+
+        <div class="card-details">
+          <div class="detail-item" *ngIf="restauracja.adres">
+            <i class="pi pi-map-marker"></i>
+            <span>{{ restauracja.adres }}</span>
+          </div>
+
+          <div class="detail-item" *ngIf="restauracja.nr_kontaktowy">
+            <i class="pi pi-phone"></i>
+            <span>{{ restauracja.nr_kontaktowy }}</span>
+          </div>
+
+          <div class="detail-item" *ngIf="restauracja.email">
+            <i class="pi pi-envelope"></i>
+            <span>{{ restauracja.email }}</span>
+          </div>
+        </div>
+
+        <button pButton class="reserve-btn" (click)="openReservationDialog(restauracja)">
+          <i class="pi pi-calendar-plus"></i>
+          Rezerwuj stolik
+        </button>
+      </div>
+    </article>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <p-progressSpinner strokeWidth="3" animationDuration=".8s"></p-progressSpinner>
+    <p>Ładowanie restauracji...</p>
+  </div>
+
+  <div *ngIf="!loading && restauracje.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="pi pi-building"></i>
+    </div>
+    <h3>Brak restauracji</h3>
+    <p>Nie znaleziono żadnych restauracji w systemie</p>
+  </div>
+</div>
+
+<app-reservation-dialog
+  [visible]="reservationDialogVisible"
+  [restaurantName]="selectedRestaurant?.nazwa || ''"
+  [restauracjaId]="selectedRestaurant?.restauracja_id || 0"
+  (visibleChange)="reservationDialogVisible = $event"
+  (confirm)="onReservationConfirmed($event)">
+</app-reservation-dialog>
+
+<p-toast></p-toast>
