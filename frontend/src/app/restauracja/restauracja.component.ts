@@ -11,7 +11,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
-import { ReservationDialogComponent, Table } from '../reservation/reservation-dialog.component';
+import { ReservationDialogComponent, TableUI } from '../reservation/reservation-dialog.component';
 
 @Component({
   selector: 'app-home',
@@ -207,7 +207,7 @@ export class RestauracjaComponent implements OnInit {
   }
 
   // ZAIMPLEMENTOWANA METODA - zapisuje układ stolików do bazy
-  async onLayoutSaved(newTables: Table[]) {
+  async onLayoutSaved(newTables: TableUI[]) {
     if (!this.currentRestaurantForLayout) {
       this.floorPlanDialogVisible = false;
       return;
